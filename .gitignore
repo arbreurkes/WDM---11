@@ -14,7 +14,7 @@ x64/
 [Bb]in/
 [Oo]bj/
 
-
+.vs/
 # Files built by Visual Studio
 *_i.c
 *_p.c
