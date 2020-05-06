@@ -6,21 +6,22 @@ using System.Threading.Tasks;
 
 namespace OrleansBasics
 {
-    public class CartGrain : Orleans.Grain, ICartGrain
+    public class OrderGrain : Orleans.Grain, IOrderGrain
     {
-        public Task AddProduct(Product product)
+        Order order = new Order();
+
+        public Task AddItem()
+        {
+            throw new NotImplementedException();
+        }
+        public Task RemoveItem()
         {
             throw new NotImplementedException();
         }
 
-        public Task<Cart> GetCart()
+        public Task<Order> GetOrder()
         {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<Product>> GetProducts()
-        {
-            throw new NotImplementedException();
+            return Task.Factory.StartNew(() => order);
         }
     }
 }

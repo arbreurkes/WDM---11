@@ -28,7 +28,7 @@ namespace API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddSingleton<IClusterClient>(CreateClusterClient);
+            services.AddSingleton(CreateClusterClient);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -61,10 +61,10 @@ namespace API
                     options.ClusterId = "dev";
                     options.ServiceId = "OrleansBasics";
                 })
-                //.ConfigureLogging(logging => logging.AddConsole())
+                .ConfigureLogging(logging => logging.AddConsole())
                 .Build();
 
-            client.Connect().Wait();
+            client.Connect().Wait(); //Catch exception if it does not connects
             Console.WriteLine("Client successfully connected to silo host \n");
             return client;
         }

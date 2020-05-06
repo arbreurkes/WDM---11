@@ -4,8 +4,9 @@ using System.Text;
 
 namespace DataModels
 {
-    public class User
+    //Is this model needed?
+    public class Payment
     {
-        public decimal Credit { get; set; } = 0;
+
     }
 }
