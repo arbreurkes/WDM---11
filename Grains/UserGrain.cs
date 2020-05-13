@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace OrleansBasics
 {
-    public class UserGrain : Orleans.Grain, IUserGrain
+    public class UserGrain : Grain, IUserGrain
     {
         //This object should be changed to persistentstate/transactionalstate to allow persistence or transactions. 
         User user = new User();
