@@ -1,9 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using DataModels;
 using Microsoft.AspNetCore.Mvc;
 using Orleans;
 using OrleansBasics;
-using DataModels;
+using System;
+using System.Threading.Tasks;
 
 namespace API.Controllers
 {
@@ -47,9 +47,10 @@ namespace API.Controllers
             var order = _client.GetGrain<IOrderGrain>(order_id);
             //Should receive the item_id ? The item itself or the grain?
             var item = _client.GetGrain<IStockGrain>(item_id);
-            order.AddItem(await item.GetStock());
-        }
 
+            order.AddItem(await item.GetStock());
+
+        }
         [HttpDelete("removeitem/{order_id}/{item_id}")]
         public async Task RemoveItem(Guid order_id, Guid item_id)
         {
@@ -57,8 +58,9 @@ namespace API.Controllers
             //Should receive the item_id ? The item itself or the grain?
             var item = _client.GetGrain<IStockGrain>(item_id);
             order.RemoveItem(await item.GetStock());
-        }
 
+
+        }
         [HttpPost("checkout/{id}")]
         public async Task<bool> Checkout(Guid id)
         {

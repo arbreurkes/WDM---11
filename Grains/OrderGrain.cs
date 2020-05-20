@@ -1,17 +1,23 @@
 ﻿using DataModels;
 using Orleans;
+using Orleans.Runtime;
 using System;
 using System.Threading.Tasks;
 
 namespace OrleansBasics
 {
-    public class OrderGrain : Orleans.Grain, IOrderGrain
+    public class OrderGrain : Grain, IOrderGrain
     {
-        Order order = new Order();
+        private readonly IPersistentState<Order> _order;
+
+        public OrderGrain([PersistentState("order", "wdmgroup11")] IPersistentState<Order> order)
+        {
+            _order = order;
+        }
 
         public Task<Guid> CreateOrder(Guid userId) //userId or IUserGrain?
         {
-            order.Create(userId);
+            _order.State.Create(userId);
             return Task.FromResult(this.GetPrimaryKey());
         }
 
@@ -19,9 +25,9 @@ namespace OrleansBasics
         {
             bool result = false;
 
-            if (order.Exists)
+            if (_order.State.Exists)
             {
-                order = new Order(); // resets timestamp
+                _order.State = new Order(); // resets timestamp
                 result = true;
             }
 
@@ -30,9 +36,9 @@ namespace OrleansBasics
 
         public Task<Order> GetOrder()
         {
-            if (order.Exists)
+            if (_order.State.Exists)
             {
-                return Task.FromResult(order);
+                return Task.FromResult(_order.State);
             }
 
             return Task.FromResult<Order>(null); //Throw exception?;
@@ -75,29 +81,30 @@ namespace OrleansBasics
 
         public Task<decimal> GetTotalCost()
         {
-            if (!order.Exists)
+            if (!_order.State.Exists)
             {
                 throw new OrderDoesNotExistsException();
             }
+            _order.WriteStateAsync();
 
-            return Task.FromResult(order.Total);
+            return Task.FromResult(_order.State.Total);
         }
 
         public Task<bool> GetStatus()
         {
-            return Task.FromResult(order.Exists && order.Completed);
+            return Task.FromResult(_order.State.Exists && _order.State.Completed);
         }
 
         public Task<bool> Checkout()
         {
-            if (!order.CanCheckout) return Task.FromResult(false);
+            if (!_order.State.CanCheckout) return Task.FromResult(false);
             
             // foreach (Stock item in order.Items)
             // {
             //     //ToDo: subtract stock.
             // }
             
-            order.Checkout();
+            _order.State.Checkout();
 
             return Task.FromResult(true);
         }
@@ -105,28 +112,28 @@ namespace OrleansBasics
         //Complete === Checkout ?
         public Task<bool> Complete()
         {
-            order.Complete();
+            _order.State.Complete();
             
             return Task.FromResult(true);
         }
         
         public Task<bool> CancelCheckout()
         {
-            if (!order.CheckedOut) return Task.FromResult(false);
+            if (!_order.State.CheckedOut) return Task.FromResult(false);
             
             // foreach (Stock item in order.Items)
             // {
             //     //ToDo: revert stock transaction.
             // }
             
-            order.CancelCheckout();
+            _order.State.CancelCheckout();
 
             return Task.FromResult(true);
         }
 
         public Task<Guid> GetUser()
         {
-            if (order.Exists)
+            if (_order.State.Exists)
             {
                 return Task.FromResult(this.GetPrimaryKey());
             }

@@ -45,7 +45,14 @@ namespace OrleansBasics
                 })
                .ConfigureApplicationParts(parts => parts.AddFromApplicationBaseDirectory())
                .UseDashboard(options => { })
-               .ConfigureLogging(logging => logging.AddConsole());
+               .ConfigureLogging(logging =>
+                    logging.AddConsole()).AddAzureTableGrainStorage(
+                    name: "wdmgroup11",
+                    configureOptions: options =>
+                    {
+                        options.UseJson = true;
+                        options.ConnectionString = "DefaultEndpointsProtocol=https;AccountName=wdmgroup11;AccountKey=gl81cDAOlt7o/+YoTWUc5tAg3Gn9V0j8JvHoffuR0RCyrPOHsRPSwCTmMuxYBhSrIjIbz/cvc2A28j3CUznVuQ==;EndpointSuffix=core.windows.net";
+                    });
 
             var host = builder.Build();
             await host.StartAsync();
