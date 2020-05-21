@@ -52,6 +52,7 @@ namespace OrleansBasics
                     configureOptions: options =>
                     {
                         options.UseJson = true;
+                        options.TableName = "orderStore";
                         options.ConnectionString = "DefaultEndpointsProtocol=https;AccountName=wdmgroup11;AccountKey=gl81cDAOlt7o/+YoTWUc5tAg3Gn9V0j8JvHoffuR0RCyrPOHsRPSwCTmMuxYBhSrIjIbz/cvc2A28j3CUznVuQ==;EndpointSuffix=core.windows.net";
                     })
                .AddAzureTableGrainStorage(
@@ -59,6 +60,7 @@ namespace OrleansBasics
                     configureOptions: options =>
                     {
                         options.UseJson = true;
+                        options.TableName = "stockStore";
                         options.ConnectionString = "DefaultEndpointsProtocol=https;AccountName=wdmgroup11;AccountKey=gl81cDAOlt7o/+YoTWUc5tAg3Gn9V0j8JvHoffuR0RCyrPOHsRPSwCTmMuxYBhSrIjIbz/cvc2A28j3CUznVuQ==;EndpointSuffix=core.windows.net";
                     })
                 .AddAzureTableGrainStorage(
@@ -66,6 +68,7 @@ namespace OrleansBasics
                 configureOptions: options =>
                 {
                     options.UseJson = true;
+                    options.TableName = "userStore";
                     options.ConnectionString = "DefaultEndpointsProtocol=https;AccountName=wdmgroup11;AccountKey=gl81cDAOlt7o/+YoTWUc5tAg3Gn9V0j8JvHoffuR0RCyrPOHsRPSwCTmMuxYBhSrIjIbz/cvc2A28j3CUznVuQ==;EndpointSuffix=core.windows.net";
                 });
 
