@@ -10,17 +10,23 @@ namespace OrleansBasics
     {
         private readonly IPersistentState<Order> _order;
 
-        public OrderGrain([PersistentState("order", "orderStore")] IPersistentState<Order> order)
+        public OrderGrain([PersistentState("order", "orderStore")] IPersistentState<Order> order )
         {
             _order = order;
         }
 
+        /// <summary>
+        /// Create and order and save it to Azure Table Storage provider (defined in program.cs)
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public Task<Guid> CreateOrder(Guid userId) //userId or IUserGrain?
         {
             try
             {
                 _order.State.Create(userId);
                 _order.WriteStateAsync();
+
                 return Task.FromResult(this.GetPrimaryKey());
             }
             catch (Exception e)
@@ -43,14 +49,20 @@ namespace OrleansBasics
             return Task.FromResult(result);
         }
 
+        /// <summary>
+        /// If the grain can be found in the memory, this method returns it
+        /// </summary>
+        /// <returns></returns>
         public Task<Order> GetOrder()
         {
             if (_order.State.Exists)
             {
                 return Task.FromResult(_order.State);
             }
-
-            return Task.FromResult<Order>(null); //Throw exception?;
+            else
+            {
+                throw new OrderDoesNotExistsException();
+            }
         }
 
         public void AddItem(Stock item)
