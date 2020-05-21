@@ -1,42 +1,72 @@
 ﻿using DataModels;
+using Orleans;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace OrleansBasics
 {
     public class UserGrain : Orleans.Grain, IUserGrain
     {
+        //This object should be changed to persistentstate/transactionalstate to allow persistence or transactions. 
         User user = new User();
 
-        public Task<bool> ChangeCredit(decimal amount)
+        public Task<Guid> CreateUser()
+        {
+            user.Create();
+            return Task.FromResult(this.GetPrimaryKey());
+        }
+
+        public Task<bool> RemoveUser()
         {
             bool result = false;
-            if(user.Credit + amount > 0)
-            {
 
-                user.Credit += amount;
+            if (user.Exists)
+            {
+                user = new User(); // resets timestamp
                 result = true;
             }
+
             return Task.FromResult(result);
         }
 
         public Task<decimal> GetCredit()
         {
-            return Task.Factory.StartNew(() => user.Credit);
+            if (!user.Exists)
+            {
+                return null; //NOT FOUND(404)
+            }
+            return Task.FromResult(user.Credit);
         }
 
+        //Use this to check if user was created before, therefore if it exists in the other methods.
         public Task<User> GetUser()
         {
+            if (!user.Exists)
+            {
+                throw new Exception();
+            }
+
             return Task.FromResult(user);
+
         }
 
-        public Task<Guid> NewOrder()
+        public Task<bool> ChangeCredit(decimal amount)
         {
-            //Add order to user
-            var guid = Guid.NewGuid();
-            return Task.FromResult(guid);
+            bool result = false;
+
+            if (!user.Exists)
+            {
+                throw new UserDoesNotExistsException();
+            }
+            if(user.Credit + amount > 0)
+            {
+                user.Credit += amount;
+                result = true;
+            }
+
+            return Task.FromResult(result);
         }
+
+   
     }
 }

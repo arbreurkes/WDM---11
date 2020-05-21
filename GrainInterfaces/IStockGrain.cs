@@ -13,8 +13,6 @@ namespace OrleansBasics
 
         Task ChangeAmount(int amount);
         Task<int> GetAmount();
-        
-
-
+        void Create(decimal price);
     }
 }

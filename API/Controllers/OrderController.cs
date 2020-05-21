@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Orleans;
 using OrleansBasics;
@@ -14,53 +11,72 @@ namespace API.Controllers
     [ApiController]
     public class OrderController : ControllerBase
     {
-
         private readonly IClusterClient _client;
+
         public OrderController(IClusterClient client)
         {
             _client = client;
         }
-        [HttpPost("create/{id}")]
-        public string CreateOrder(Guid id)
-        {
 
-            var user = _client.GetGrain<IUserGrain>(id);
-            return user.NewOrder() +""; //Not the most elegant way to convert
+        [HttpPost("create/{id}")]
+        public async Task<Guid> CreateOrder(Guid id)
+        {
+            var orderId = Guid.NewGuid();
+            var order = _client.GetGrain<IOrderGrain>(orderId);
+            return await order.CreateOrder(id);
         }
 
         [HttpDelete("remove/{id}")]
-        public void DeletesOrder(Guid id)
+        public async Task<bool> RemoveOrder(Guid id)
         {
-            
-            //Delete order -> Remove order from user
-       
+            //Delete order -> Remove order from user // For now user doesn't have orders
+            var order = _client.GetGrain<IOrderGrain>(id);
+            return await order.RemoveOrder();
         }
-        [HttpGet("find/{id}")]
-        public Task<Order> GetOrderDetails(Guid id)
-        {
-            return _client.GetGrain<IOrderGrain>(id).GetOrder();
-        }
-        [HttpPost("additem/{order_id}/{item_id}")]
-        public void AddItem(Guid orderId, Guid itemId)
-        {
-            var order = _client.GetGrain<IOrderGrain>(orderId);
-            //Should receive the item_id ? The item itself or the grain?
-            order.AddItem();
 
+        [HttpGet("find/{id}")]
+        public async Task<Order> GetOrderDetails(Guid id)
+        {
+            var order = _client.GetGrain<IOrderGrain>(id);
+            return await order.GetOrder();
         }
-        [HttpDelete("removeitem/{order_id}/{item_id}")]
-        public void RemoveItem(Guid order_id, Guid item_id)
+
+        [HttpPost("additem/{order_id}/{item_id}")]
+        public async Task AddItem(Guid order_id, Guid item_id)
         {
             var order = _client.GetGrain<IOrderGrain>(order_id);
             //Should receive the item_id ? The item itself or the grain?
-            order.RemoveItem();
-
+            var item = _client.GetGrain<IStockGrain>(item_id);
+            order.AddItem(await item.GetStock());
         }
-        [HttpPost("checkout/{id}")]
-        public Task<bool> Checkout(Guid id)
+
+        [HttpDelete("removeitem/{order_id}/{item_id}")]
+        public async Task RemoveItem(Guid order_id, Guid item_id)
         {
-            //Call payment service, should it call the service itself or a grain ? Should payments be grains?
-            return Task.FromResult(true);
+            var order = _client.GetGrain<IOrderGrain>(order_id);
+            //Should receive the item_id ? The item itself or the grain?
+            var item = _client.GetGrain<IStockGrain>(item_id);
+            order.RemoveItem(await item.GetStock());
+        }
+
+        [HttpPost("checkout/{id}")]
+        public async Task<bool> Checkout(Guid id)
+        {
+            var order = _client.GetGrain<IOrderGrain>(id);
+
+            var result = await order.Checkout();
+            //Cancel checkout if something goes wrong.
+            
+            if (result)
+            {
+                var user_id = await order.GetUser();
+
+                //pay
+                await _client.GetGrain<IUserGrain>(user_id).ChangeCredit(-await order.GetTotalCost());
+
+                //remove from stock
+            }
+            return result;
         }
 
     }
