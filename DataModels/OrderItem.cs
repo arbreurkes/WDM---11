@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,7 +7,9 @@ namespace DataModels
 {
     public class OrderItem
     {
-        public Stock Item { get; set; } //FK ?
+        [JsonProperty(PropertyName = "item")]
+        public Stock Item { get; set; } //The available quantity should not be returned. Right ?
+        [JsonProperty(PropertyName = "quantity")]
         public int Quantity { get; set; }
 
         public void IncQuantity()

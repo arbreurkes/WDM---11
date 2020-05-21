@@ -57,7 +57,7 @@ namespace API.Controllers
             var order = _client.GetGrain<IOrderGrain>(order_id);
             bool status = await order.GetStatus();
             
-            return await Task.FromResult("{'paid': '" + status + "'}");
+            return await Task.FromResult("{'paid': '" + status + "'}"); //This is converting the string itself, "paid" is not being converted as an attribute.
         }
     }
 }

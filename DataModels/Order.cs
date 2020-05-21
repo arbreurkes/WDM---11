@@ -7,13 +7,15 @@ namespace DataModels
 {
     public class Order
     {
-        [JsonIgnore] //Ignore this or send it too ?
+        [JsonProperty(PropertyName = "user_id")]
         public Guid userId { get; set; } //FK of use
 
+        //Should be saved and returned as a list.
         public Dictionary<Guid, OrderItem> Items { get; } = new Dictionary<Guid, OrderItem>();
 
         public DateTime? CreatedAt { get; set; } = null;
         public DateTime? CheckedOutAt { get; set; } = null;
+        //When the order is completed (the user can not cancel checkout at this point)
         public DateTime? CompletedAt { get; set; } = null;
 
         //Non serializable
@@ -31,6 +33,8 @@ namespace DataModels
         [JsonProperty(PropertyName = "total_cost")]
         public decimal Total => Items.Values.Sum(i => i.Quantity * i.Item.Price);
 
+
+
    
         public void Create(Guid userId)
         {
@@ -43,6 +47,7 @@ namespace DataModels
             CheckedOutAt = DateTime.Now;
         }
 
+        //Not used for now
         public void Complete()
         {
             CompletedAt = DateTime.Now;
