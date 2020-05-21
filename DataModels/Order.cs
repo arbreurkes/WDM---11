@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace DataModels
 {
+    [Serializable]
     public class Order
     {
         [JsonProperty(PropertyName = "user_id")]
