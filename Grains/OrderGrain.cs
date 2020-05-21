@@ -10,15 +10,24 @@ namespace OrleansBasics
     {
         private readonly IPersistentState<Order> _order;
 
-        public OrderGrain([PersistentState("order", "wdmgroup11")] IPersistentState<Order> order)
+        public OrderGrain([PersistentState("order", "orderStore")] IPersistentState<Order> order)
         {
             _order = order;
         }
 
         public Task<Guid> CreateOrder(Guid userId) //userId or IUserGrain?
         {
-            _order.State.Create(userId);
-            return Task.FromResult(this.GetPrimaryKey());
+            try
+            {
+                _order.State.Create(userId);
+                _order.WriteStateAsync();
+                return Task.FromResult(this.GetPrimaryKey());
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+                return null;
+            }
         }
 
         public Task<bool> RemoveOrder()
@@ -48,7 +57,7 @@ namespace OrleansBasics
         {
             Guid id = item.ID;
 
-            if(_order.State.Items.ContainsKey(id))
+            if (_order.State.Items.ContainsKey(id))
             {
                 _order.State.Items[id].IncQuantity(); // reference or copy?
             }
@@ -57,7 +66,7 @@ namespace OrleansBasics
                 OrderItem oi = new OrderItem() { Item = item }; // like this? or change constructor
                 _order.State.Items.Add(id, oi);
             }
-            
+
         }
 
         public void RemoveItem(Stock item)
@@ -69,8 +78,8 @@ namespace OrleansBasics
                 try
                 {
                     _order.State.Items[id].DecQuantity();
-                } 
-                catch(InvalidQuantityException)
+                }
+                catch (InvalidQuantityException)
                 {
                     _order.State.Items.Remove(id);
                 }
@@ -98,12 +107,12 @@ namespace OrleansBasics
         public Task<bool> Checkout()
         {
             if (!_order.State.CanCheckout) return Task.FromResult(false);
-            
+
             // foreach (Stock item in order.Items)
             // {
             //     //ToDo: subtract stock.
             // }
-            
+
             _order.State.Checkout();
 
             return Task.FromResult(true);
@@ -113,19 +122,19 @@ namespace OrleansBasics
         public Task<bool> Complete()
         {
             _order.State.Complete();
-            
+
             return Task.FromResult(true);
         }
-        
+
         public Task<bool> CancelCheckout()
         {
             if (!_order.State.CheckedOut) return Task.FromResult(false);
-            
+
             // foreach (Stock item in order.Items)
             // {
             //     //ToDo: revert stock transaction.
             // }
-            
+
             _order.State.CancelCheckout();
 
             return Task.FromResult(true);

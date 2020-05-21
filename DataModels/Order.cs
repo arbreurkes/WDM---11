@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace DataModels
 {
+    [Serializable]
     public class Order
     {
         [JsonIgnore] //Ignore this or send it too ?

@@ -4,6 +4,7 @@ using System.Text;
 
 namespace DataModels
 {
+    [Serializable]
     public class OrderItem
     {
         public Stock Item { get; set; } //FK ?
