@@ -40,12 +40,37 @@ namespace OrleansBasics
 
         public void AddItem(Stock item)
         {
-            order.Items.Add(item);
+            Guid id = item.ID;
+
+            if(order.Items.ContainsKey(id))
+            {
+                order.Items[id].IncQuantity(); // reference or copy?
+            }
+            else // catch exception and remove if?
+            {
+                OrderItem oi = new OrderItem() { Item = item }; // like this? or change constructor
+                order.Items.Add(id, oi);
+            }
+            
         }
 
         public void RemoveItem(Stock item)
         {
-            order.Items.Remove(item);
+            Guid id = item.ID;
+
+            if (order.Items.ContainsKey(id))
+            {
+                try
+                {
+                    order.Items[id].DecQuantity();
+                } 
+                catch(InvalidQuantityException)
+                {
+                    order.Items.Remove(id);
+                }
+            }
+
+            // what if item was not ordered?
         }
 
         public Task<decimal> GetTotalCost()
