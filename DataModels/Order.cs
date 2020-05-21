@@ -34,6 +34,8 @@ namespace DataModels
         [JsonProperty(PropertyName = "total_cost")]
         public decimal Total => Items.Sum(i => i.Price);
 
+
+
    
         public void Create(Guid userId)
         {

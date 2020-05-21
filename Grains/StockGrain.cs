@@ -15,7 +15,7 @@ namespace OrleansBasics
         {
             if (!stock.Exists)
             {
-                throw new Exception("Item does not exist"); //Change to proper exceptions
+                throw new StockDoesNotExistsException(); 
             }
             if(stock.Quantity + amount > 0)
             {
@@ -32,7 +32,7 @@ namespace OrleansBasics
         {
             if (!stock.Exists)
             {
-                throw new Exception("Item does not exist");
+                throw new StockDoesNotExistsException();
             }
             return Task.FromResult(stock);
         }
