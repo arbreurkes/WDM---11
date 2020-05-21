@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace OrleansBasics
 {
     [Serializable]
-    internal class StockDoesNotExistsException : Exception
+    public class StockDoesNotExistsException : Exception
     {
         public StockDoesNotExistsException()
         {

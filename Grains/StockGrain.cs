@@ -23,7 +23,7 @@ namespace OrleansBasics
             }
             else
             {
-                throw new Exception("Not enough stock."); //Change to proper exceptions
+                throw new InvalidQuantityException();
             }
             return Task.FromResult(0);
         }
@@ -41,7 +41,7 @@ namespace OrleansBasics
         {
             if(!stock.Exists)
             {
-                throw new Exception("Item does not exist");
+                throw new StockDoesNotExistsException();
             }
             return Task.FromResult(stock.Quantity.Value);
         }

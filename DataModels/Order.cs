@@ -7,11 +7,12 @@ namespace DataModels
 {
     public class Order
     {
-        [JsonIgnore] //Ignore this or send it too ?
+        [JsonProperty(PropertyName = "user_id")]
         public Guid userId { get; set; } //FK of use
 
         public Dictionary<Guid, OrderItem> Items { get; } = new Dictionary<Guid, OrderItem>();
 
+        
         public DateTime? CreatedAt { get; set; } = null;
         public DateTime? CheckedOutAt { get; set; } = null;
         public DateTime? CompletedAt { get; set; } = null;
@@ -45,6 +46,7 @@ namespace DataModels
             CheckedOutAt = DateTime.Now;
         }
 
+        //Not used
         public void Complete()
         {
             CompletedAt = DateTime.Now;

@@ -6,7 +6,7 @@ namespace DataModels
 {
     public class OrderItem
     {
-        public Stock Item { get; set; } //FK ?
+        public Stock Item { get; set; }
         public int Quantity { get; set; }
 
         public void IncQuantity()
