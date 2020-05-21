@@ -48,14 +48,14 @@ namespace OrleansBasics
         {
             Guid id = item.ID;
 
-            if(order.Items.ContainsKey(id))
+            if(_order.State.Items.ContainsKey(id))
             {
-                order.Items[id].IncQuantity(); // reference or copy?
+                _order.State.Items[id].IncQuantity(); // reference or copy?
             }
             else // catch exception and remove if?
             {
                 OrderItem oi = new OrderItem() { Item = item }; // like this? or change constructor
-                order.Items.Add(id, oi);
+                _order.State.Items.Add(id, oi);
             }
             
         }
@@ -64,15 +64,15 @@ namespace OrleansBasics
         {
             Guid id = item.ID;
 
-            if (order.Items.ContainsKey(id))
+            if (_order.State.Items.ContainsKey(id))
             {
                 try
                 {
-                    order.Items[id].DecQuantity();
+                    _order.State.Items[id].DecQuantity();
                 } 
                 catch(InvalidQuantityException)
                 {
-                    order.Items.Remove(id);
+                    _order.State.Items.Remove(id);
                 }
             }
 
