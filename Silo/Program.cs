@@ -51,7 +51,10 @@ namespace OrleansBasics
                 .ConfigureEndpoints(siloPort: 11111, gatewayPort: 30000)
                //This step will help Orleans to load user assemblies and types.These assemblies are referred
                //to as Application Parts.All Grains, Grain Interfaces, and Serializers are discovered using Application Parts.
-               .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(IOrderGrain).Assembly).WithReferences())
+               .ConfigureApplicationParts(parts => {
+                   parts.AddApplicationPart(typeof(IOrderGrain).Assembly).WithReferences();
+                   parts.AddApplicationPart(typeof(OrderGrain).Assembly).WithReferences();
+                   })
                .UseDashboard(options => { })
                .ConfigureLogging(logging =>
                     logging.AddConsole())
