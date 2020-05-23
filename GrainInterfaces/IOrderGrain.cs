@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrleansBasics
+namespace Infrastructure.Interfaces
 {
     public interface IOrderGrain : IGrainWithGuidKey
     {
