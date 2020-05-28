@@ -9,7 +9,7 @@ namespace API.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UsersController : ControllerBase
     {
         /*
            /users/create/
@@ -27,7 +27,7 @@ namespace API.Controllers
         */
 
         private readonly IClusterClient _client;
-        public UserController(IClusterClient client)
+        public UsersController(IClusterClient client)
         {
             _client = client;
         }

@@ -9,11 +9,11 @@ namespace API.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class OrderController : ControllerBase
+    public class OrdersController : ControllerBase
     {
         private readonly IClusterClient _client;
 
-        public OrderController(IClusterClient client)
+        public OrdersController(IClusterClient client)
         {
             _client = client;
         }

@@ -11,10 +11,10 @@ namespace OrleansBasics
         //This object should be changed to persistentstate/transactionalstate to allow persistence or transactions. 
         User user = new User();
 
-        public Task<Guid> CreateUser()
+        public Task<User> CreateUser()
         {
             user.Create();
-            return Task.FromResult(this.GetPrimaryKey());
+            return Task.FromResult(user);
         }
 
         public Task<bool> RemoveUser()

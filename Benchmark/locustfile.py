@@ -5,15 +5,15 @@ from typing import List
 from locust import HttpLocust, TaskSet, TaskSequence, seq_task, between
 
 # replace the example urls and ports with the appropriate ones
-ORDER_URL = "http://127.0.0.1:5000"
-PAYMENT_URL = "http://127.0.0.1:5001"
-STOCK_URL = "http://127.0.0.1:5002"
-USER_URL = "http://127.0.0.1:5003"
+ORDER_URL = "https://localhost:44347"
+PAYMENT_URL = "https://localhost:44347"
+STOCK_URL = "https://localhost:44347"
+USER_URL = "https://localhost:44347"
 
 
 def create_item(self):
     price = random.randint(1, 10)
-    response = self.client.post(f"{STOCK_URL}/stock/item/create/{price}", name="/stock/item/create/[price]")
+    response = self.client.post(f"{STOCK_URL}/stock/item/create/{price}", name="/stock/item/create/[price]",verify=False)
     self.item_ids.append(response.json()['item_id'])
 
 

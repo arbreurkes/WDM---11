@@ -26,7 +26,7 @@ namespace OrleansBasics
             try
             {
                 _order.State.Create(userId);
-                _order.WriteStateAsync();
+                //_order.WriteStateAsync();
 
                 return Task.FromResult(this.GetPrimaryKey());
             }
