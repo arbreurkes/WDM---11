@@ -18,12 +18,12 @@ namespace API.Controllers
             _client = client;
         }
 
-        [HttpPost("create/{id}")]
-        public async Task<Guid> CreateOrder(Guid id)
+        [HttpPost("create/{user_id}")]
+        public async Task<Guid> CreateOrder(Guid user_id)
         {
             var orderId = Guid.NewGuid();
             var order = _client.GetGrain<IOrderGrain>(orderId);
-            return await order.CreateOrder(id);
+            return await order.CreateOrder(user_id);
         }
 
         [HttpDelete("remove/{id}")]

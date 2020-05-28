@@ -12,8 +12,8 @@ namespace OrleansBasics
         User user = new User();
 
         public Task<User> CreateUser()
-        {
-            user.Create();
+        {  
+            user.Create(this.GetPrimaryKey());
             return Task.FromResult(user);
         }
 

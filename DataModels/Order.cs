@@ -10,7 +10,8 @@ namespace DataModels
     {
         [JsonProperty(PropertyName = "user_id")]
         public Guid userId { get; set; } //FK of use
-
+        [JsonProperty(PropertyName ="order_id")]
+        public Guid ID { get; set; }
         //Should be saved and returned as a list.
         public Dictionary<Guid, OrderItem> Items { get; } = new Dictionary<Guid, OrderItem>();
 
@@ -37,9 +38,10 @@ namespace DataModels
 
 
    
-        public void Create(Guid userId)
+        public void Create(Guid userId,Guid orderId)
         {
             this.userId = userId;
+            this.ID = orderId;
             CreatedAt = DateTime.Now;
         }
 
