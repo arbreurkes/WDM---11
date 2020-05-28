@@ -34,7 +34,7 @@ namespace API.Controllers
 
         [HttpPost("create")]
         [Produces("application/json")]
-        public Task<Guid> CreateUser()
+        public Task<User> CreateUser()
         {
             var id = Guid.NewGuid();
             var user = _client.GetGrain<IUserGrain>(id);
