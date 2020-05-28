@@ -3,7 +3,7 @@ using Orleans;
 using System;
 using System.Threading.Tasks;
 
-namespace OrleansBasics
+namespace Infrastructure.Interfaces
 {
     public interface IUserGrain : IGrainWithGuidKey
     {

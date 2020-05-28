@@ -1,4 +1,5 @@
-﻿using DataModels;
+﻿using Infrastructure.Interfaces;
+using DataModels;
 using Orleans;
 using System;
 using System.Threading.Tasks;

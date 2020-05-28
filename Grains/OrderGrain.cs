@@ -1,4 +1,5 @@
 ﻿using DataModels;
+using Infrastructure.Interfaces;
 using Orleans;
 using Orleans.Runtime;
 using System;

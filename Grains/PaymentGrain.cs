@@ -1,8 +1,8 @@
+using DataModels;
+using Infrastructure.Interfaces;
+using Orleans;
 using System;
 using System.Threading.Tasks;
-using DataModels;
-using GrainInterfaces;
-using Orleans;
 
 namespace Grains
 {
