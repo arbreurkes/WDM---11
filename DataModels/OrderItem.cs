@@ -5,6 +5,7 @@ using System.Text;
 
 namespace DataModels
 {
+    [Serializable]
     public class OrderItem
     {
         [JsonProperty(PropertyName = "item")]

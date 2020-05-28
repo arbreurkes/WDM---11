@@ -1,13 +1,12 @@
 ﻿using DataModels;
 using Orleans;
 using System;
-using System.Collections.Generic;
-using System.Text;
+using Infrastructure.Interfaces;
 using System.Threading.Tasks;
 
 namespace OrleansBasics
 {
-    public class StockGrain : Orleans.Grain, IStockGrain
+    public class StockGrain : Grain, IStockGrain
     {
         Stock stock = new Stock();
 

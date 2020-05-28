@@ -1,17 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Configuration;
+using Orleans.Hosting;
+using OrleansBasics;
+using System;
 
 namespace API
 {
@@ -61,10 +59,16 @@ namespace API
                 .UseLocalhostClustering()
                 .Configure<ClusterOptions>(options =>
                 {
-                    options.ClusterId = "dev";
-                    options.ServiceId = "OrleansBasics";
+                    options.ClusterId = "wdm-group11-orleans-silocluster";
+                    options.ServiceId = "wdm-group11-orleans-api";
                 })
                 .ConfigureLogging(logging => logging.AddConsole())
+                .UseAzureStorageClustering(options =>
+                    options.ConnectionString = "DefaultEndpointsProtocol=https;AccountName=wdmgroup11;AccountKey=gl81cDAOlt7o/+YoTWUc5tAg3Gn9V0j8JvHoffuR0RCyrPOHsRPSwCTmMuxYBhSrIjIbz/cvc2A28j3CUznVuQ==;EndpointSuffix=core.windows.net")
+                .ConfigureApplicationParts(p => {
+                    p.AddApplicationPart(typeof(IOrderGrain).Assembly);
+                    p.AddApplicationPart(typeof(OrderGrain).Assembly);
+                })
                 .Build();
 
             client.Connect().Wait(); //Catch exception if it does not connects

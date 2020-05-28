@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using DataModels;
 using Orleans;
 
-namespace GrainInterfaces
+namespace Infrastructure.Interfaces
 {
     //NOT USED
     //CHECK PR COMMENTS ON ARTHUR -> MASTER
