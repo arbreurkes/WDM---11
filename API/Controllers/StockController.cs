@@ -1,5 +1,7 @@
-﻿using Infrastructure.Interfaces;
+﻿using DataModels;
+using Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.OData.UriParser;
 using Orleans;
 using System;
 using System.Threading.Tasks;
@@ -29,7 +31,12 @@ namespace API.Controllers
 
             return await stock.GetAmount();
         }
-
+        [HttpGet("find/{item_id}")]
+        public Task<Stock> GetStock(Guid item_id)
+        {
+            var stock = _client.GetGrain<IStockGrain>(item_id);
+            return stock.GetStock();
+        }
         [HttpPost("substract/{id}/{number}")]
         public void SubstractAvailability(Guid id,int number)
         {
@@ -51,11 +58,11 @@ namespace API.Controllers
             stock.ChangeAmount(number);
         }
         [HttpPost("item/create/{price}")]
-        public Task<string> AddItem(decimal price)
+        public Task<Stock> AddItem(decimal price)
         {
             var item = _client.GetGrain<IStockGrain>(Guid.NewGuid());
-            item.Create(price);
-            return Task.FromResult(item.GetPrimaryKey() + ""); //Again, not the most elegant way to convert the object.
+            
+            return item.Create(price); //Again, not the most elegant way to convert the object.
 
         }
       

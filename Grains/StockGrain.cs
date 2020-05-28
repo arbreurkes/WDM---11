@@ -45,11 +45,12 @@ namespace OrleansBasics
             return Task.FromResult(stock.Quantity.Value);
         }
 
-        public void Create(decimal price)
+        public Task<Stock> Create(decimal price)
         {
             //What if the item already exists ? Are updates allowed ?
             stock.Price = price;
             stock.ID = this.GetPrimaryKey();
+            return Task.FromResult(stock);
         }
     }
 }

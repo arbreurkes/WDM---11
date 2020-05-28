@@ -21,14 +21,14 @@ namespace OrleansBasics
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public Task<Guid> CreateOrder(Guid userId) //userId or IUserGrain?
+        public Task<Order> CreateOrder(Guid userId) 
         {
             try
             {
                 _order.State.Create(userId,this.GetPrimaryKey());
                 //_order.WriteStateAsync();
 
-                return Task.FromResult(this.GetPrimaryKey());
+                return Task.FromResult(_order.State);
             }
             catch (Exception e)
             {
@@ -161,5 +161,7 @@ namespace OrleansBasics
             }
             throw new OrderDoesNotExistsException();
         }
+
+      
     }
 }

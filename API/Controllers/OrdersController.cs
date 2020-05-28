@@ -19,7 +19,7 @@ namespace API.Controllers
         }
 
         [HttpPost("create/{user_id}")]
-        public async Task<Guid> CreateOrder(Guid user_id)
+        public async Task<Order> CreateOrder(Guid user_id)
         {
             var orderId = Guid.NewGuid();
             var order = _client.GetGrain<IOrderGrain>(orderId);

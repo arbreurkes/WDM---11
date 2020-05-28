@@ -7,7 +7,7 @@ namespace Infrastructure.Interfaces
 {
     public interface IOrderGrain : IGrainWithGuidKey
     {
-        Task<Guid> CreateOrder(Guid userId);
+        Task<Order> CreateOrder(Guid userId);
 
         Task<bool> RemoveOrder();
 
