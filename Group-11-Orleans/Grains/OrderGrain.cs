@@ -21,14 +21,14 @@ namespace OrleansBasics
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public Task<Guid> CreateOrder(Guid userId) //userId or IUserGrain?
+        public Task<Order> CreateOrder(Guid userId)
         {
             try
             {
-                _order.State.Create(userId);
-                _order.WriteStateAsync();
+                _order.State.Create(userId, this.GetPrimaryKey());
+                //_order.WriteStateAsync();
 
-                return Task.FromResult(this.GetPrimaryKey());
+                return Task.FromResult(_order.State);
             }
             catch (Exception e)
             {
@@ -72,7 +72,7 @@ namespace OrleansBasics
 
             if (_order.State.Items.ContainsKey(id))
             {
-                _order.State.Items[id].IncQuantity(); // reference or copy?
+                _order.State.Items[id].IncQuantity();
             }
             else // catch exception and remove if?
             {
@@ -161,5 +161,7 @@ namespace OrleansBasics
             }
             throw new OrderDoesNotExistsException();
         }
+
+
     }
 }

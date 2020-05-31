@@ -7,7 +7,7 @@ namespace Infrastructure.Interfaces
 {
     public interface IUserGrain : IGrainWithGuidKey
     {
-        Task<Guid> CreateUser();
+        Task<User> CreateUser();
 
         Task<bool> RemoveUser();
 
@@ -17,6 +17,6 @@ namespace Infrastructure.Interfaces
 
         Task<bool> ChangeCredit(decimal amount);
 
-     
+
     }
 }

@@ -10,6 +10,6 @@ namespace Infrastructure.Interfaces
 
         Task ChangeAmount(int amount);
         Task<int> GetAmount();
-        void Create(decimal price);
+        Task<Stock> Create(decimal price);
     }
 }

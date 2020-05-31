@@ -9,7 +9,7 @@ namespace API.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UsersController : ControllerBase
     {
         /*
            /users/create/
@@ -27,14 +27,14 @@ namespace API.Controllers
         */
 
         private readonly IClusterClient _client;
-        public UserController(IClusterClient client)
+        public UsersController(IClusterClient client)
         {
             _client = client;
         }
 
         [HttpPost("create")]
         [Produces("application/json")]
-        public Task<Guid> CreateUser()
+        public Task<User> CreateUser()
         {
             var id = Guid.NewGuid();
             var user = _client.GetGrain<IUserGrain>(id);
@@ -42,22 +42,21 @@ namespace API.Controllers
             return user.CreateUser(); //Should it be user_id : {user_id} ?
         }
 
-        [HttpDelete("remove/{id}")]
-        public Task<bool> RemoveUser(Guid id)
+        [HttpDelete("remove/{user_id}")]
+        public Task<bool> RemoveUser(Guid user_id)
         {
-            var user = _client.GetGrain<IUserGrain>(id);
+            var user = _client.GetGrain<IUserGrain>(user_id);
             return user.RemoveUser();
         }
 
-        [HttpGet("find/{id}")]
+        [HttpGet("find/{user_id}")]
         [Produces("application/json")]
-        public Task<User> GetUser(Guid id)
+        public Task<User> GetUser(Guid user_id)
         {
             //What if it doesnt exist?
             //When the grain is invoked should it check the db or something if the id exists? 
-            //(e.g) use OnActivateAsync(?) to check if user exists ? Need a storage provider for that.
-            var user = _client.GetGrain<IUserGrain>(id);
-         
+            var user = _client.GetGrain<IUserGrain>(user_id);
+
             //Send ok or not found.
             return user.GetUser();
         }
@@ -67,21 +66,21 @@ namespace API.Controllers
         {
             var user = _client.GetGrain<IUserGrain>(id);
             return user.GetCredit();
-        } 
+        }
 
-        [HttpPut("credit/substract/{id}/{amount}")]
+        [HttpPost("credit/substract/{id}/{amount}")]
         public Task<bool> SubstractCredit(Guid id, decimal amount)
         {
             var user = _client.GetGrain<IUserGrain>(id);
             return user.ChangeCredit(-amount);
         }
 
-        [HttpPut("credit/add/{id}/{amount}")]
-        public Task<bool> AddCredit(Guid id, decimal amount)
+        [HttpPost("credit/add/{user_id}/{amount}")]
+        public Task<bool> AddCredit(Guid user_id, decimal amount)
         {
-            var user = _client.GetGrain<IUserGrain>(id);
+            var user = _client.GetGrain<IUserGrain>(user_id);
             return user.ChangeCredit(amount);
         }
-       
+
     }
 }

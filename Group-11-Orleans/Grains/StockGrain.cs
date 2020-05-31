@@ -1,24 +1,30 @@
 ﻿using DataModels;
-using Orleans;
-using System;
 using Infrastructure.Interfaces;
+using Orleans;
+using Orleans.Runtime;
 using System.Threading.Tasks;
 
 namespace OrleansBasics
 {
     public class StockGrain : Grain, IStockGrain
     {
-        Stock stock = new Stock();
+        private readonly IPersistentState<Stock> _stock;
+
+
+        public StockGrain([PersistentState("order", "orderStore")] IPersistentState<Stock> stock)
+        {
+            _stock = stock;
+        }
 
         public Task ChangeAmount(int amount)
         {
-            if (!stock.Exists)
+            if (!_stock.State.Exists)
             {
-                throw new StockDoesNotExistsException(); 
+                throw new StockDoesNotExistsException();
             }
-            if(stock.Quantity + amount > 0)
+            if (_stock.State.Quantity + amount > 0)
             {
-                stock.Quantity += amount;
+                _stock.State.Quantity += amount;
             }
             else
             {
@@ -29,27 +35,28 @@ namespace OrleansBasics
 
         public Task<Stock> GetStock()
         {
-            if (!stock.Exists)
+            if (!_stock.State.Exists)
             {
                 throw new StockDoesNotExistsException();
             }
-            return Task.FromResult(stock);
+            return Task.FromResult(_stock.State);
         }
 
         public Task<int> GetAmount()
         {
-            if(!stock.Exists)
+            if (!_stock.State.Exists)
             {
                 throw new StockDoesNotExistsException();
             }
-            return Task.FromResult(stock.Quantity.Value);
+            return Task.FromResult(_stock.State.Quantity);
         }
 
-        public void Create(decimal price)
+        public Task<Stock> Create(decimal price)
         {
             //What if the item already exists ? Are updates allowed ?
-            stock.Price = price;
-            stock.ID = this.GetPrimaryKey();
+            _stock.State.Price = price;
+            _stock.State.ID = this.GetPrimaryKey();
+            return Task.FromResult(_stock.State);
         }
     }
 }

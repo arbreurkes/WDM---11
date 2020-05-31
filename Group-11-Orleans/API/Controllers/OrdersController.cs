@@ -9,29 +9,22 @@ namespace API.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class OrderController : ControllerBase
+    public class OrdersController : ControllerBase
     {
         private readonly IClusterClient _client;
 
-        public OrderController(IClusterClient client)
+        public OrdersController(IClusterClient client)
         {
             _client = client;
-         
         }
 
-        [HttpPost("create/{id}")]
-        public async Task<Guid> CreateOrder(Guid id)
+        [HttpPost("create/{user_id}")]
+        public async Task<Order> CreateOrder(Guid user_id)
         {
-            try
-            {
-                Guid orderId = Guid.NewGuid();
-                Guid order = await _client.GetGrain<IOrderGrain>(orderId).CreateOrder(id);
-                return order;
-            }
-            catch (Exception e)
-            {
-                return Guid.Empty;
-            }
+            var orderId = Guid.NewGuid();
+            await _client.GetGrain<IUserGrain>(user_id).GetUser(); //if user does not exist an exception is thrown
+            var order = _client.GetGrain<IOrderGrain>(orderId);
+            return await order.CreateOrder(user_id);
         }
 
         [HttpDelete("remove/{id}")]
@@ -69,10 +62,10 @@ namespace API.Controllers
 
 
         }
-        [HttpPost("checkout/{id}")]
-        public async Task<bool> Checkout(Guid id)
+        [HttpPost("checkout/{order_id}")]
+        public async Task<bool> Checkout(Guid order_id)
         {
-            var order = _client.GetGrain<IOrderGrain>(id);
+            var order = _client.GetGrain<IOrderGrain>(order_id);
 
             var result = await order.Checkout();
             //Cancel checkout if something goes wrong.

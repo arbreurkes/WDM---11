@@ -1,53 +1,60 @@
-﻿using Infrastructure.Interfaces;
-using DataModels;
+﻿using DataModels;
+using Infrastructure.Interfaces;
 using Orleans;
-using System;
+using Orleans.Runtime;
 using System.Threading.Tasks;
 
 namespace OrleansBasics
 {
     public class UserGrain : Grain, IUserGrain
     {
-        //This object should be changed to persistentstate/transactionalstate to allow persistence or transactions. 
-        User user = new User();
+        private readonly IPersistentState<User> _user;
 
-        public Task<Guid> CreateUser()
+        public UserGrain([PersistentState("user", "userStore")] IPersistentState<User> user)
         {
-            user.Create();
-            return Task.FromResult(this.GetPrimaryKey());
+            _user = user;
+        }
+        //This object should be changed to persistentstate/transactionalstate to allow persistence or transactions. 
+
+        public Task<User> CreateUser()
+        {
+            //What if user already exists ? 
+
+            _user.State.Create(this.GetPrimaryKey());
+            return Task.FromResult(_user.State);
         }
 
         public Task<bool> RemoveUser()
         {
-            bool result = false;
+            bool result = true;
 
-            if (user.Exists)
+            if (!_user.State.Exists)
             {
-                user = new User(); // resets timestamp
-                result = true;
+                throw new UserDoesNotExistsException();
             }
+
+            //Remove user from database.
 
             return Task.FromResult(result);
         }
 
         public Task<decimal> GetCredit()
         {
-            if (!user.Exists)
+            if (!_user.State.Exists)
             {
-                return null; //NOT FOUND(404)
+                throw new UserDoesNotExistsException();
             }
-            return Task.FromResult(user.Credit);
+            return Task.FromResult(_user.State.Credit);
         }
 
-        //Use this to check if user was created before, therefore if it exists in the other methods.
         public Task<User> GetUser()
         {
-            if (!user.Exists)
+            if (!_user.State.Exists)
             {
-                throw new Exception();
+                throw new UserDoesNotExistsException();
             }
 
-            return Task.FromResult(user);
+            return Task.FromResult(_user.State);
 
         }
 
@@ -55,19 +62,17 @@ namespace OrleansBasics
         {
             bool result = false;
 
-            if (!user.Exists)
+            if (!_user.State.Exists)
             {
                 throw new UserDoesNotExistsException();
             }
-            if(user.Credit + amount > 0)
+            if (_user.State.Credit + amount > 0)
             {
-                user.Credit += amount;
+                _user.State.Credit += amount;
                 result = true;
             }
 
             return Task.FromResult(result);
         }
-
-   
     }
 }
