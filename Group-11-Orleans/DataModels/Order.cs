@@ -12,6 +12,7 @@ namespace DataModels
         public Guid userId { get; set; } //FK of use
 
         //Should be saved and returned as a list.
+        [JsonIgnore]
         public Dictionary<Guid, OrderItem> Items { get; } = new Dictionary<Guid, OrderItem>();
 
         public DateTime? CreatedAt { get; set; } = null;
@@ -33,10 +34,7 @@ namespace DataModels
 
         [JsonProperty(PropertyName = "total_cost")]
         public decimal Total => Items.Values.Sum(i => i.Quantity * i.Item.Price);
-
-
-
-   
+ 
         public void Create(Guid userId)
         {
             this.userId = userId;

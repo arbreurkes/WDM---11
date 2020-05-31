@@ -16,14 +16,22 @@ namespace API.Controllers
         public OrderController(IClusterClient client)
         {
             _client = client;
+         
         }
 
         [HttpPost("create/{id}")]
         public async Task<Guid> CreateOrder(Guid id)
         {
-            var orderId = Guid.NewGuid();
-            var order = _client.GetGrain<IOrderGrain>(orderId);
-            return await order.CreateOrder(id);
+            try
+            {
+                Guid orderId = Guid.NewGuid();
+                Guid order = await _client.GetGrain<IOrderGrain>(orderId).CreateOrder(id);
+                return order;
+            }
+            catch (Exception e)
+            {
+                return Guid.Empty;
+            }
         }
 
         [HttpDelete("remove/{id}")]
@@ -68,7 +76,7 @@ namespace API.Controllers
 
             var result = await order.Checkout();
             //Cancel checkout if something goes wrong.
-            
+
             if (result)
             {
                 var user_id = await order.GetUser();
