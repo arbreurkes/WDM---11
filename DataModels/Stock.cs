@@ -10,11 +10,11 @@ namespace DataModels
         [JsonProperty(PropertyName = "item_id")]
         public Guid ID { get; set; }
         [JsonProperty(PropertyName = "quantity")]
-        public int? Quantity { get; set; } = null;
+        public int Quantity { get; set; } = 0;
         [JsonProperty(PropertyName = "price")]
-        public decimal Price { get; set; }
+        public decimal Price { get; set; } = 0;
 
         [JsonIgnore]
-        public bool Exists => Quantity != null;
+        public bool Exists => ID != null;
     }
 }

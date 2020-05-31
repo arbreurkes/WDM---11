@@ -22,6 +22,7 @@ namespace API.Controllers
         public async Task<Order> CreateOrder(Guid user_id)
         {
             var orderId = Guid.NewGuid();
+            await _client.GetGrain<IUserGrain>(user_id).GetUser(); //if user does not exist an exception is thrown
             var order = _client.GetGrain<IOrderGrain>(orderId);
             return await order.CreateOrder(user_id);
         }
@@ -61,16 +62,16 @@ namespace API.Controllers
 
 
         }
-        [HttpPost("checkout/{id}")]
-        public async Task<bool> Checkout(Guid id)
+        [HttpPost("checkout/{order_id}")]
+        public async Task<bool> Checkout(Guid order_id)
         {
-            var order = _client.GetGrain<IOrderGrain>(id);
+            var order = _client.GetGrain<IOrderGrain>(order_id);
 
             var result = await order.Checkout();
             //Cancel checkout if something goes wrong.
             
             if (result)
-            {
+          {
                 var user_id = await order.GetUser();
 
                 //pay

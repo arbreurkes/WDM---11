@@ -13,19 +13,22 @@ namespace OrleansBasics
 
         public Task<User> CreateUser()
         {  
+            //What if user already exists ? 
+
             user.Create(this.GetPrimaryKey());
             return Task.FromResult(user);
         }
 
         public Task<bool> RemoveUser()
         {
-            bool result = false;
+            bool result = true;
 
-            if (user.Exists)
+            if (!user.Exists)
             {
-                user = new User(); // resets timestamp
-                result = true;
+                throw new UserDoesNotExistsException();
             }
+
+            //Remove user from database.
 
             return Task.FromResult(result);
         }
@@ -34,17 +37,16 @@ namespace OrleansBasics
         {
             if (!user.Exists)
             {
-                return null; //NOT FOUND(404)
+                throw new UserDoesNotExistsException();
             }
             return Task.FromResult(user.Credit);
         }
 
-        //Use this to check if user was created before, therefore if it exists in the other methods.
         public Task<User> GetUser()
         {
             if (!user.Exists)
             {
-                throw new Exception();
+                throw new UserDoesNotExistsException();
             }
 
             return Task.FromResult(user);

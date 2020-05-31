@@ -5,6 +5,7 @@ using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
 using Infrastructure.Interfaces;
+using DataModels;
 
 namespace OrleansBasics
 {
@@ -40,7 +41,7 @@ namespace OrleansBasics
             // define the cluster configuration
             var builder = new SiloHostBuilder()
                 .UseLocalhostClustering()
-                .UseAzureStorageClustering(options => options.ConnectionString = connectionString)
+                //.UseAzureStorageClustering(options => options.ConnectionString = connectionString)
                 .Configure<ClusterOptions>(options =>
                 {
                     options.ClusterId = "wdm-group11-orleans-silocluster";
@@ -48,13 +49,12 @@ namespace OrleansBasics
                 })
                 //Silo-to-silo endpoints, used for communication between silos in the same cluster
                 //Client-to-silo endpoints (or gateway), used for communication between clients and silos in the same cluster
-                .ConfigureEndpoints(siloPort: 11111, gatewayPort: 30000)
-               //This step will help Orleans to load user assemblies and types.These assemblies are referred
-               //to as Application Parts.All Grains, Grain Interfaces, and Serializers are discovered using Application Parts.
-               .ConfigureApplicationParts(parts => {
-                   parts.AddApplicationPart(typeof(IOrderGrain).Assembly).WithReferences();
-                   parts.AddApplicationPart(typeof(OrderGrain).Assembly).WithReferences();
-                   })
+                 //This step will help Orleans to load user assemblies and types.These assemblies are referred
+                 //to as Application Parts.All Grains, Grain Interfaces, and Serializers are discovered using Application Parts.
+               .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(OrderGrain).Assembly).WithReferences())
+               // .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(UserGrain).Assembly).WithReferences())
+               // .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(StockGrain).Assembly).WithReferences())
+
                .UseDashboard(options => { })
                .ConfigureLogging(logging =>
                     logging.AddConsole())

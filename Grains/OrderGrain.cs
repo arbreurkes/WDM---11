@@ -72,7 +72,7 @@ namespace OrleansBasics
 
             if (_order.State.Items.ContainsKey(id))
             {
-                _order.State.Items[id].IncQuantity(); // reference or copy?
+                _order.State.Items[id].IncQuantity();
             }
             else // catch exception and remove if?
             {

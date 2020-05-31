@@ -8,7 +8,7 @@ namespace OrleansBasics
 {
     public class StockGrain : Grain, IStockGrain
     {
-        Stock stock = new Stock();
+        Stock stock = new Stock(); //TransactionalState relevant here.
 
         public Task ChangeAmount(int amount)
         {
@@ -42,7 +42,7 @@ namespace OrleansBasics
             {
                 throw new StockDoesNotExistsException();
             }
-            return Task.FromResult(stock.Quantity.Value);
+            return Task.FromResult(stock.Quantity);
         }
 
         public Task<Stock> Create(decimal price)

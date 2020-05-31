@@ -55,7 +55,6 @@ namespace API.Controllers
         {
             //What if it doesnt exist?
             //When the grain is invoked should it check the db or something if the id exists? 
-            //(e.g) use OnActivateAsync(?) to check if user exists ? Need a storage provider for that.
             var user = _client.GetGrain<IUserGrain>(user_id);
          
             //Send ok or not found.
