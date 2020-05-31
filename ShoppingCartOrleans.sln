@@ -13,6 +13,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Grains", "Grains\Grains.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Silo", "Silo\Silo.csproj", "{AC1B0168-81D6-40FB-AA58-0EA7677FD31D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{9CFE40D6-3A98-42A0-828F-6401D538F260}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrainsTest", "Test\GrainsTest\GrainsTest.csproj", "{954DA3C6-54E1-4D52-88E7-AB0549309B00}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataModelsTest", "Test\DataModelsTest\DataModelsTest.csproj", "{ED1B5A97-50B4-40B8-8833-F96280F44EA0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,11 +45,23 @@ Global
 		{AC1B0168-81D6-40FB-AA58-0EA7677FD31D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC1B0168-81D6-40FB-AA58-0EA7677FD31D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC1B0168-81D6-40FB-AA58-0EA7677FD31D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{954DA3C6-54E1-4D52-88E7-AB0549309B00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{954DA3C6-54E1-4D52-88E7-AB0549309B00}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{954DA3C6-54E1-4D52-88E7-AB0549309B00}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{954DA3C6-54E1-4D52-88E7-AB0549309B00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED1B5A97-50B4-40B8-8833-F96280F44EA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED1B5A97-50B4-40B8-8833-F96280F44EA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED1B5A97-50B4-40B8-8833-F96280F44EA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED1B5A97-50B4-40B8-8833-F96280F44EA0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {063709CF-7906-4585-8812-27C0D5E0D593}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{954DA3C6-54E1-4D52-88E7-AB0549309B00} = {9CFE40D6-3A98-42A0-828F-6401D538F260}
+		{ED1B5A97-50B4-40B8-8833-F96280F44EA0} = {9CFE40D6-3A98-42A0-828F-6401D538F260}
 	EndGlobalSection
 EndGlobal
