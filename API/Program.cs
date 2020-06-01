@@ -8,12 +8,14 @@ using Orleans;
 using Orleans.Hosting;
 using Orleans.Configuration;
 using System.Threading.Tasks;
+using Infrastructure.Interfaces;
+using OrleansBasics;
 
 namespace AspNetCoreCohosting
 {
     public class Program
     {
-        public static Task Main(string[] args) => 
+        public static Task Main(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
@@ -48,7 +50,12 @@ namespace AspNetCoreCohosting
                         opts.ClusterId = "wdm-group11-orleans-silocluster";
                         opts.ServiceId = "wdm-group11-orleans-api";
                     })
-                     .AddAzureTableGrainStorage(
+                .ConfigureApplicationParts(parts =>
+                {
+                    parts.AddApplicationPart(typeof(IOrderGrain).Assembly).WithReferences();
+                    parts.AddApplicationPart(typeof(OrderGrain).Assembly).WithReferences();
+                })
+                .AddAzureTableGrainStorage(
                     name: "orderStore",
                     configureOptions: options =>
                     {
@@ -56,7 +63,7 @@ namespace AspNetCoreCohosting
                         options.TableName = "orderStore";
                         options.ConnectionString = connectionString;
                     })
-               .AddAzureTableGrainStorage(
+                .AddAzureTableGrainStorage(
                     name: "stockStore",
                     configureOptions: options =>
                     {
@@ -72,7 +79,8 @@ namespace AspNetCoreCohosting
                         options.TableName = "userStore";
                         options.ConnectionString = connectionString;
                     })
-                    .Configure<EndpointOptions>(opts =>
+                .UseDashboard(opts => { })
+                .Configure<EndpointOptions>(opts =>
                     {
                         opts.AdvertisedIPAddress = IPAddress.Loopback;
                     });
