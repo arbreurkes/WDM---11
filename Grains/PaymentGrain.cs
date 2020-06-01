@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Grains
 {
+    //NOT USED
     public class PaymentGrain : Orleans.Grain, IPaymentGrain
     {
         Payment payment = new Payment();

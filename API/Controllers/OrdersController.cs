@@ -27,6 +27,7 @@ namespace API.Controllers
             return await order.CreateOrder(user_id);
         }
 
+    
         [HttpDelete("remove/{id}")]
         public async Task<bool> RemoveOrder(Guid id)
         {
@@ -78,6 +79,7 @@ namespace API.Controllers
                 await _client.GetGrain<IUserGrain>(user_id).ChangeCredit(-await order.GetTotalCost());
 
                 //remove from stock
+                //what if some substraction failed?
             }
             return result;
         }

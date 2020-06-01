@@ -10,6 +10,12 @@ PAYMENT_URL = "https://localhost:44347"
 STOCK_URL = "https://localhost:44347"
 USER_URL = "https://localhost:44347"
 
+#ORDER_URL = "https://wdmorleans.azurewebsites.net/"
+PAYMENT_URL = ORDER_URL
+STOCK_URL = PAYMENT_URL
+USER_URL = STOCK_URL
+
+
 
 def create_item(self):
     price = random.randint(1, 10)

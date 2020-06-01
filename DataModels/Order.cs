@@ -15,6 +15,8 @@ namespace DataModels
         //Should be saved and returned as a list.
         public Dictionary<Guid, OrderItem> Items { get; } = new Dictionary<Guid, OrderItem>();
 
+
+
         public DateTime? CreatedAt { get; set; } = null;
         public DateTime? CheckedOutAt { get; set; } = null;
         //When the order is completed (the user can not cancel checkout at this point)

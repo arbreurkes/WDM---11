@@ -26,7 +26,6 @@ namespace OrleansBasics
             }
             return Task.FromResult(0);
         }
-
         public Task<Stock> GetStock()
         {
             if (!stock.Exists)

@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace DataModels
 {
-    //Is this model needed?
+    //NOT USED.
     public class Payment
     {
         public Guid userId { get; set; }
