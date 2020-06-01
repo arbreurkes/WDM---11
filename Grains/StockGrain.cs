@@ -17,7 +17,7 @@ namespace Grains
             _stock = stock;
         }
 
-        public Task ChangeAmount(int amount)
+        public Task<bool> ChangeAmount(int amount)
         {
             if (!_stock.State.Exists)
             {
@@ -31,7 +31,8 @@ namespace Grains
             {
                 throw new InvalidQuantityException();
             }
-            return Task.FromResult(0);
+            
+            return Task.FromResult(true);
         }
 
         public Task<Stock> GetStock()
