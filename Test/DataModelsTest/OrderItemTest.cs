@@ -69,7 +69,7 @@ namespace Test.DataModelsTest
         [Test]
         public void DecQuantityTestFail()
         {
-            _orderItem.Quantity = 1;
+            _orderItem.Quantity = 0;
             
             Assert.Throws<InvalidQuantityException>(() => _orderItem.DecQuantity());
         }
