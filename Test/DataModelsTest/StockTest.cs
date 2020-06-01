@@ -66,7 +66,7 @@ namespace DataModelsTest
         [Test]
         public void ExistsTestTrue()
         {
-            _stock.Quantity = 42;
+            _stock.ID = new Guid();
             
             Assert.True(_stock.Exists);
         }
