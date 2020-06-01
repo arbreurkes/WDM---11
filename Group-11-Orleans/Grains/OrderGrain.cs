@@ -68,33 +68,38 @@ namespace OrleansBasics
 
         public void AddItem(Stock item)
         {
-            Guid id = item.ID;
-
-            if (_order.State.Items.ContainsKey(id))
+            if (item.Exists)
             {
-                _order.State.Items[id].IncQuantity();
-            }
-            else // catch exception and remove if?
-            {
-                OrderItem oi = new OrderItem() { Item = item }; // like this? or change constructor
-                _order.State.Items.Add(id, oi);
-            }
+                Guid id = item.ID.Value;
 
+                if (_order.State.Items.ContainsKey(id))
+                {
+                    _order.State.Items[id].IncQuantity();
+                }
+                else // catch exception and remove if?
+                {
+                    OrderItem oi = new OrderItem() { Item = item }; // like this? or change constructor
+                    _order.State.Items.Add(id, oi);
+                }
+            }
         }
 
         public void RemoveItem(Stock item)
         {
-            Guid id = item.ID;
-
-            if (_order.State.Items.ContainsKey(id))
+            if (item.Exists)
             {
-                try
+                Guid id = item.ID.Value;
+
+                if (_order.State.Items.ContainsKey(id))
                 {
-                    _order.State.Items[id].DecQuantity();
-                }
-                catch (InvalidQuantityException)
-                {
-                    _order.State.Items.Remove(id);
+                    try
+                    {
+                        _order.State.Items[id].DecQuantity();
+                    }
+                    catch (InvalidQuantityException)
+                    {
+                        _order.State.Items.Remove(id);
+                    }
                 }
             }
 

@@ -6,7 +6,7 @@ namespace DataModels
     public class Stock
     {
         [JsonProperty(PropertyName = "item_id")]
-        public Guid ID { get; set; }
+        public Guid? ID { get; set; } = null;
         [JsonProperty(PropertyName = "quantity")]
         public int Quantity { get; set; } = 0;
         [JsonProperty(PropertyName = "price")]
