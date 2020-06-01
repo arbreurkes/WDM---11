@@ -17,6 +17,6 @@ namespace Infrastructure.Interfaces
 
         Task<bool> ChangeCredit(decimal amount);
 
-     
+
     }
 }

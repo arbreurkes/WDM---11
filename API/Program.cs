@@ -8,8 +8,10 @@ using Orleans;
 using Orleans.Hosting;
 using Orleans.Configuration;
 using System.Threading.Tasks;
+using Infrastructure.Interfaces;
+using OrleansBasics;
 
-namespace AspNetCoreCohosting
+namespace ShoppingCart
 {
     public class Program
     {
@@ -41,7 +43,6 @@ namespace AspNetCoreCohosting
 
                     string connectionString = conf.GetConnectionString("BartsAzureTableStorage");
                     siloBuilder
-                   
                     //.UseLocalhostClustering()
                     .UseAzureStorageClustering(options => options.ConnectionString = connectionString)
                     .Configure<ClusterOptions>(opts =>
@@ -49,7 +50,12 @@ namespace AspNetCoreCohosting
                         opts.ClusterId = "wdm-group11-orleans-silocluster";
                         opts.ServiceId = "wdm-group11-orleans-api";
                     })
-                     .AddAzureTableGrainStorage(
+                .ConfigureApplicationParts(parts =>
+                {
+                    parts.AddApplicationPart(typeof(IOrderGrain).Assembly).WithReferences();
+                    parts.AddApplicationPart(typeof(OrderGrain).Assembly).WithReferences();
+                })
+                .AddAzureTableGrainStorage(
                     name: "orderStore",
                     configureOptions: options =>
                     {
@@ -57,7 +63,7 @@ namespace AspNetCoreCohosting
                         options.TableName = "orderStore";
                         options.ConnectionString = connectionString;
                     })
-               .AddAzureTableGrainStorage(
+                .AddAzureTableGrainStorage(
                     name: "stockStore",
                     configureOptions: options =>
                     {
@@ -73,7 +79,7 @@ namespace AspNetCoreCohosting
                         options.TableName = "userStore";
                         options.ConnectionString = connectionString;
                     })
-                .UseDashboard(options => { })
+                .UseDashboard(opts => { })
                 .Configure<EndpointOptions>(opts =>
                     {
                         opts.AdvertisedIPAddress = IPAddress.Loopback;

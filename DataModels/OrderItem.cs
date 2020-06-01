@@ -20,12 +20,12 @@ namespace DataModels
 
         public void DecQuantity()
         {
-            Quantity -= 1;
-
-            if (Quantity < 1)
+            if (Quantity - 1 < 1)
             {
                 throw new InvalidQuantityException();
             }
+            
+            Quantity -= 1;
         }
     }
 }

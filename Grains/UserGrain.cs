@@ -1,29 +1,34 @@
-﻿using Infrastructure.Interfaces;
-using DataModels;
+﻿using DataModels;
+using Infrastructure.Interfaces;
 using Orleans;
-using System;
+using Orleans.Runtime;
 using System.Threading.Tasks;
 
 namespace OrleansBasics
 {
     public class UserGrain : Grain, IUserGrain
     {
+        private readonly IPersistentState<User> _user;
+
+        public UserGrain([PersistentState("user", "userStore")] IPersistentState<User> user)
+        {
+            _user = user;
+        }
         //This object should be changed to persistentstate/transactionalstate to allow persistence or transactions. 
-        User user = new User();
 
         public Task<User> CreateUser()
-        {  
+        {
             //What if user already exists ? 
 
-            user.Create(this.GetPrimaryKey());
-            return Task.FromResult(user);
+            _user.State.Create(this.GetPrimaryKey());
+            return Task.FromResult(_user.State);
         }
 
         public Task<bool> RemoveUser()
         {
             bool result = true;
 
-            if (!user.Exists)
+            if (!_user.State.Exists)
             {
                 throw new UserDoesNotExistsException();
             }
@@ -35,21 +40,21 @@ namespace OrleansBasics
 
         public Task<decimal> GetCredit()
         {
-            if (!user.Exists)
+            if (!_user.State.Exists)
             {
                 throw new UserDoesNotExistsException();
             }
-            return Task.FromResult(user.Credit);
+            return Task.FromResult(_user.State.Credit);
         }
 
         public Task<User> GetUser()
         {
-            if (!user.Exists)
+            if (!_user.State.Exists)
             {
                 throw new UserDoesNotExistsException();
             }
 
-            return Task.FromResult(user);
+            return Task.FromResult(_user.State);
 
         }
 
@@ -57,19 +62,17 @@ namespace OrleansBasics
         {
             bool result = false;
 
-            if (!user.Exists)
+            if (!_user.State.Exists)
             {
                 throw new UserDoesNotExistsException();
             }
-            if(user.Credit + amount > 0)
+            if (_user.State.Credit + amount > 0)
             {
-                user.Credit += amount;
+                _user.State.Credit += amount;
                 result = true;
             }
 
             return Task.FromResult(result);
         }
-
-   
     }
 }

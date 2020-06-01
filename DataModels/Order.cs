@@ -9,18 +9,17 @@ namespace DataModels
     public class Order
     {
         [JsonProperty(PropertyName = "user_id")]
-        public Guid userId { get; set; } //FK of use
-        [JsonProperty(PropertyName ="order_id")]
-        public Guid ID { get; set; }
+        public Guid userId { get; private set; } //FK of use
+        
+        [JsonProperty(PropertyName = "order_id")]
+        public Guid ID { get; private set; }
         //Should be saved and returned as a list.
         public Dictionary<Guid, OrderItem> Items { get; } = new Dictionary<Guid, OrderItem>();
 
-
-
-        public DateTime? CreatedAt { get; set; } = null;
-        public DateTime? CheckedOutAt { get; set; } = null;
+        public DateTime? CreatedAt { get; private set; } = null;
+        public DateTime? CheckedOutAt { get; private set; } = null;
         //When the order is completed (the user can not cancel checkout at this point)
-        public DateTime? CompletedAt { get; set; } = null;
+        public DateTime? CompletedAt { get; private set; } = null;
 
         //Non serializable
         [JsonIgnore]
@@ -33,34 +32,54 @@ namespace DataModels
         public bool Completed => CompletedAt != null;
         [JsonIgnore]
         public bool CanCheckout => Exists && !CheckedOut && !Completed;
+        [JsonIgnore]
+        public bool CanComplete => Exists && CheckedOut && !Completed;
 
         [JsonProperty(PropertyName = "total_cost")]
         public decimal Total => Items.Values.Sum(i => i.Quantity * i.Item.Price);
 
 
 
-   
-        public void Create(Guid userId,Guid orderId)
+
+        public void Create(Guid userId, Guid orderId)
         {
             this.userId = userId;
             this.ID = orderId;
             CreatedAt = DateTime.Now;
         }
 
-        public void Checkout()
+        public Boolean Checkout()
         {
-            CheckedOutAt = DateTime.Now;
+            if (CanCheckout)
+            {
+                CheckedOutAt = DateTime.Now;
+                return true;
+            }
+
+            return false;
         }
 
         //Not used for now
-        public void Complete()
+        public Boolean Complete()
         {
-            CompletedAt = DateTime.Now;
+            if (CanComplete)
+            {
+                CompletedAt = DateTime.Now;
+                return true;
+            }
+
+            return false;
         }
-        
-        public void CancelCheckout()
+
+        public Boolean CancelCheckout()
         {
-            CheckedOutAt = null;
+            if (CheckedOut && !Completed)
+            {
+                CheckedOutAt = null;
+                return true;
+            }
+
+            return false;
         }
     }
 }

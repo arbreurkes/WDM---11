@@ -70,7 +70,7 @@ namespace API.Controllers
 
             var result = await order.Checkout();
             //Cancel checkout if something goes wrong.
-            
+
             if (result)
           {
                 var user_id = await order.GetUser();

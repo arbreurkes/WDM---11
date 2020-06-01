@@ -1,26 +1,31 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 
 namespace DataModels
 {
     public class User
     {
-        [JsonProperty(PropertyName ="user_id")]
+        [JsonProperty(PropertyName = "user_id")]
         public Guid ID { get; set; }
         [JsonProperty(PropertyName = "credit")]
         public decimal Credit { get; set; } = 0;
 
         public DateTime? CreatedAt { get; private set; } = null;
-       
+
 
         [JsonIgnore]
         public bool Exists => CreatedAt != null;
-
-        public void Create(Guid id)
+        
+        public Boolean Create(Guid id)
         {
-            ID = id;
-            CreatedAt = DateTime.Now;
+            if (!Exists)
+            {
+                ID = id;
+                CreatedAt = DateTime.Now;
+                return true;
+            }
+
+            return false;
         }
     }
 }
