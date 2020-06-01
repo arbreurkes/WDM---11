@@ -1,10 +1,11 @@
-﻿using DataModels;
+﻿using System.Threading.Tasks;
+using DataModels;
 using Infrastructure.Interfaces;
 using Orleans;
 using Orleans.Runtime;
-using System.Threading.Tasks;
+using OrleansBasics;
 
-namespace OrleansBasics
+namespace Grains
 {
     public class UserGrain : Grain, IUserGrain
     {
@@ -44,6 +45,7 @@ namespace OrleansBasics
             {
                 throw new UserDoesNotExistsException();
             }
+
             return Task.FromResult(_user.State.Credit);
         }
 
@@ -55,24 +57,19 @@ namespace OrleansBasics
             }
 
             return Task.FromResult(_user.State);
-
         }
 
         public Task<bool> ChangeCredit(decimal amount)
         {
-            bool result = false;
-
             if (!_user.State.Exists)
             {
                 throw new UserDoesNotExistsException();
             }
-            if (_user.State.Credit + amount > 0)
-            {
-                _user.State.Credit += amount;
-                result = true;
-            }
 
-            return Task.FromResult(result);
+            if (_user.State.Credit + amount < decimal.Zero) return Task.FromResult(false);
+            _user.State.Credit += amount;
+
+            return Task.FromResult(true);
         }
     }
 }

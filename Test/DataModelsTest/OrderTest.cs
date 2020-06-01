@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using NUnit.Framework;
 using DataModels;
+using NUnit.Framework;
 
-namespace DataModelsTest
+namespace Test.DataModelsTest
 {
     public class OrderTest
     {

@@ -1,10 +1,11 @@
-﻿using DataModels;
+﻿using System.Threading.Tasks;
+using DataModels;
 using Infrastructure.Interfaces;
 using Orleans;
 using Orleans.Runtime;
-using System.Threading.Tasks;
+using OrleansBasics;
 
-namespace OrleansBasics
+namespace Grains
 {
     public class StockGrain : Grain, IStockGrain
     {

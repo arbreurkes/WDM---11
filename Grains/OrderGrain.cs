@@ -1,11 +1,12 @@
-﻿using DataModels;
+﻿using System;
+using System.Threading.Tasks;
+using DataModels;
 using Infrastructure.Interfaces;
 using Orleans;
 using Orleans.Runtime;
-using System;
-using System.Threading.Tasks;
+using OrleansBasics;
 
-namespace OrleansBasics
+namespace Grains
 {
     public class OrderGrain : Grain, IOrderGrain
     {
