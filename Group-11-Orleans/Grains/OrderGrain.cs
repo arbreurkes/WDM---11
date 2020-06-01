@@ -68,7 +68,7 @@ namespace OrleansBasics
 
         public void AddItem(Stock item)
         {
-            if (item.ID != null)
+            if (item.Exists)
             {
                 Guid id = item.ID.Value;
 
@@ -86,7 +86,7 @@ namespace OrleansBasics
 
         public void RemoveItem(Stock item)
         {
-            if (item.ID != null)
+            if (item.Exists)
             {
                 Guid id = item.ID.Value;
 
