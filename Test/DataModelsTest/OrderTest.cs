@@ -25,7 +25,7 @@ namespace DataModelsTest
         public void TestGuidSetGet()
         {
             Guid guid = Guid.NewGuid();
-            _order.Create(guid);
+            _order.Create(guid, new Guid());
             
             Assert.AreEqual(guid, _order.userId);
         }
@@ -45,7 +45,7 @@ namespace DataModelsTest
         [Test]
         public void TestCreatedAtTrue ()
         {
-            _order.Create(new Guid());
+            _order.Create(new Guid(), new Guid());
 
             Assert.NotNull(_order.CreatedAt);
         }
@@ -74,7 +74,8 @@ namespace DataModelsTest
         [Test]
         public void TestExistsTrue ()
         {
-            _order.Create(new Guid());
+            _order.Create(new Guid(), new Guid());
+            
             Assert.True(_order.Exists);
         }
         
@@ -102,7 +103,7 @@ namespace DataModelsTest
         [Test]
         public void TestCheckedOutTrue ()
         {
-            _order.Create(new Guid());
+            _order.Create(new Guid(), new Guid());
             _order.Checkout();
             
             Assert.True(_order.CheckedOut);
@@ -134,7 +135,7 @@ namespace DataModelsTest
         [Test]
         public void TestCompletedTrue ()
         {
-            _order.Create(new Guid());
+            _order.Create(new Guid(), new Guid());
             _order.Checkout();
             _order.Complete();
             
@@ -170,7 +171,7 @@ namespace DataModelsTest
         [Test]
         public void TestCanCheckoutTrue()
         {
-            _order.Create(new Guid());
+            _order.Create(new Guid(), new Guid());
             
             Assert.True(_order.CanCheckout);
         }
@@ -202,7 +203,7 @@ namespace DataModelsTest
         [Test]
         public void TestCanCompleteTrue()
         {
-            _order.Create(new Guid());
+            _order.Create(new Guid(), new Guid());
             _order.Checkout();
             
             Assert.True(_order.CanComplete);
@@ -232,9 +233,9 @@ namespace DataModelsTest
         public void TestCreate()
         {
             Guid guid = new Guid();
-            _order.Create(guid);
+            _order.Create(new Guid(), guid);
             
-            Assert.AreEqual(guid, _order.userId);
+            Assert.AreEqual(guid, _order.ID);
         }
         
         /// <summary>
@@ -254,7 +255,7 @@ namespace DataModelsTest
         [Test]
         public void TestCompleteFalse()
         {
-            _order.Create(new Guid());
+            _order.Create(new Guid(), new Guid());
             
             Assert.False(_order.Complete());
         }
@@ -265,7 +266,7 @@ namespace DataModelsTest
         [Test]
         public void TestCancelCheckoutNotCheckedOut()
         {
-            _order.Create(new Guid());
+            _order.Create(new Guid(), new Guid());
 
             Assert.False(_order.CancelCheckout());
         }
@@ -276,7 +277,7 @@ namespace DataModelsTest
         [Test]
         public void TestCancelCheckoutAlreadyCompleted()
         {
-            _order.Create(new Guid());
+            _order.Create(new Guid(), new Guid());
             _order.Checkout();
             _order.Complete();
 
@@ -289,7 +290,7 @@ namespace DataModelsTest
         [Test]
         public void TestCancelCheckoutTrue()
         {
-            _order.Create(new Guid());
+            _order.Create(new Guid(), new Guid());
             _order.Checkout();
 
             Assert.True(_order.CancelCheckout());

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Infrastructure.Interfaces;
 using OrleansBasics;
 
-namespace AspNetCoreCohosting
+namespace ShoppingCart
 {
     public class Program
     {
