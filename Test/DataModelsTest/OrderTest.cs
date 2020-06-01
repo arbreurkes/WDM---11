@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using DataModels;
 
-namespace OrderTest
+namespace DataModelsTest
 {
-    public class Tests
+    public class OrderTest
     {
         private Order _order;
         
@@ -217,12 +217,12 @@ namespace OrderTest
             OrderItem orderItem = new OrderItem();
             Stock item = new Stock();
             orderItem.Quantity = 2;
-            item.Price = 20;
+            item.Price = 21;
             orderItem.Item = item;
             
             _order.Items.Add(new Guid(), orderItem);
             
-            Assert.AreEqual(_order.Total, 40);
+            Assert.AreEqual(_order.Total, 42);
         }
         
         /// <summary>
