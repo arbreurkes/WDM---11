@@ -15,9 +15,15 @@ namespace DataModels
         [JsonIgnore]
         public bool Exists => CreatedAt != null;
 
-        public void Create()
+        public Boolean Create()
         {
-            CreatedAt = DateTime.Now;
+            if (!Exists)
+            {
+                CreatedAt = DateTime.Now;
+                return true;
+            }
+
+            return false;
         }
     }
 }
