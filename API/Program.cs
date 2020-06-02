@@ -33,6 +33,12 @@ namespace ShoppingCart
                         {
                             endpoints.MapControllers();
                         });
+                        app.UseOrleansDashboard();
+                        app.Map("/dashboard", d =>
+                        {
+                            d.UseOrleansDashboard();
+                        });
+
                     });
                 })
                 .UseOrleans(siloBuilder =>
@@ -79,7 +85,9 @@ namespace ShoppingCart
                         options.TableName = "userStore";
                         options.ConnectionString = connectionString;
                     })
-                .UseDashboard(opts => { })
+                .UseDashboard(opts => {
+                    opts.HostSelf = false;
+                })
                 .Configure<EndpointOptions>(opts =>
                     {
                         opts.AdvertisedIPAddress = IPAddress.Loopback;
