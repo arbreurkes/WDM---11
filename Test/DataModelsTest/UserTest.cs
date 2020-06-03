@@ -17,6 +17,15 @@ namespace DataModelsTest
             _user = new User();
         }
 
+        [Test]
+        public void IDTestGet()
+        {
+            Guid guid = new Guid();
+            _user.Create(guid);
+            
+            Assert.AreEqual(guid, _user.ID);
+        }
+
         /// <summary>
         /// Test method for Credit Set and Get.
         /// </summary>
@@ -32,9 +41,20 @@ namespace DataModelsTest
         /// Test method for Create user already created.
         /// </summary>
         [Test]
-        public void CreatedAtTest()
+        public void CreatedAtTestCreated()
         {
-         
+            _user.Create(new Guid());
+            
+            Assert.NotNull(_user.CreatedAt);
+        }
+        
+        /// <summary>
+        /// Test method for Create user already created.
+        /// </summary>
+        [Test]
+        public void CreatedAtTestNotCreated()
+        {
+            Assert.Null(_user.CreatedAt);
         }
 
         /// <summary>
@@ -43,7 +63,7 @@ namespace DataModelsTest
         [Test]
         public void CreateTestTrue()
         {
-
+            Assert.True(_user.Create(new Guid()));
         }
 
         /// <summary>
@@ -52,7 +72,9 @@ namespace DataModelsTest
         [Test]
         public void CreateTestUserAlreadyCreated()
         {
-           
+            _user.Create(new Guid());
+            
+            Assert.False(_user.Create(new Guid()));
         }
     }
 }

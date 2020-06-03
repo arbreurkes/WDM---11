@@ -6,7 +6,7 @@ namespace DataModels
     public class User
     {
         [JsonProperty(PropertyName = "user_id")]
-        public Guid ID { get; set; }
+        public Guid ID { get; private set; }
         [JsonProperty(PropertyName = "credit")]
         public decimal Credit { get; set; } = 0;
 
