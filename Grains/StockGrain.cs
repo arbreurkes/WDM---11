@@ -2,6 +2,7 @@
 using Infrastructure.Interfaces;
 using Orleans;
 using Orleans.Runtime;
+using Orleans.Transactions.Abstractions;
 using System.Threading.Tasks;
 
 namespace OrleansBasics
@@ -9,7 +10,7 @@ namespace OrleansBasics
     public class StockGrain : Grain, IStockGrain
     {
         private readonly IPersistentState<Stock> _stock;
-
+        private readonly ITransactionalState<Stock> _tstock;
 
         public StockGrain([PersistentState("order", "orderStore")] IPersistentState<Stock> stock)
         {
@@ -25,6 +26,7 @@ namespace OrleansBasics
             if (_stock.State.Quantity + amount > 0)
             {
                 _stock.State.Quantity += amount;
+                //If stock == 0, remove from database? 
             }
             else
             {

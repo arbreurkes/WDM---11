@@ -18,9 +18,9 @@ namespace OrleansBasics
 
         public Task<User> CreateUser()
         {
-            //What if user already exists ? 
 
             _user.State.Create(this.GetPrimaryKey());
+           
             return Task.FromResult(_user.State);
         }
 

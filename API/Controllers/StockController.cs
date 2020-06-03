@@ -29,6 +29,7 @@ namespace API.Controllers
 
             var stock = _client.GetGrain<IStockGrain>(id);
 
+           
             return await stock.GetAmount();
         }
         [HttpGet("find/{item_id}")]

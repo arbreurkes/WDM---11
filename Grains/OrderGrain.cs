@@ -14,6 +14,7 @@ namespace OrleansBasics
         public OrderGrain([PersistentState("order", "orderStore")] IPersistentState<Order> order)
         {
             _order = order;
+           
         }
 
         /// <summary>
