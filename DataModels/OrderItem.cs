@@ -23,7 +23,7 @@ namespace DataModels
 
         public void DecQuantity()
         {
-            if (Quantity - 1 < 1)
+            if (Quantity - 1 < 0)
             {
                 throw new InvalidQuantityException();
             }

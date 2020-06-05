@@ -2,7 +2,7 @@ using System;
 using DataModels;
 using NUnit.Framework;
 
-namespace DataModelsTest
+namespace Test.DataModelsTest
 {
     public class UserTest
     {

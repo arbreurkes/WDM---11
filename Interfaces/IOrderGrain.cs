@@ -14,9 +14,9 @@ namespace Infrastructure.Interfaces
 
         Task<Order> GetOrder();
 
-        void AddItem(Stock item);
+        Task<bool> AddItem(Stock item);
 
-        void RemoveItem(Stock item);
+        Task<bool> RemoveItem(Stock item);
 
         Task<decimal> GetTotalCost();
 
@@ -32,7 +32,11 @@ namespace Infrastructure.Interfaces
 
         Task<Guid> GetUser();
 
+
         Task<List<OrderItem>> GetItems();
      
+
+        Task<bool> ClearOrder();
+
     }
 }

@@ -1,7 +1,7 @@
 using DataModels;
 using NUnit.Framework;
 
-namespace DataModelsTest
+namespace Test.DataModelsTest
 {
     public class OrderItemTest
     {
@@ -69,7 +69,7 @@ namespace DataModelsTest
         [Test]
         public void DecQuantityTestFail()
         {
-            _orderItem.Quantity = 1;
+            _orderItem.Quantity = 0;
             
             Assert.Throws<InvalidQuantityException>(() => _orderItem.DecQuantity());
         }
