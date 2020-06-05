@@ -50,16 +50,16 @@ namespace API.Controllers
             //Should receive the item_id ? The item itself or the grain?
             var item = _client.GetGrain<IStockGrain>(item_id);
 
-            order.AddItem(await item.GetStock());
+            await order.AddItem(await item.GetStock());
 
         }
         [HttpDelete("removeitem/{order_id}/{item_id}")]
         public async Task RemoveItem(Guid order_id, Guid item_id)
         {
             var order = _client.GetGrain<IOrderGrain>(order_id);
-            //Should receive the item_id ? The item itself or the grain?
+           
             var item = _client.GetGrain<IStockGrain>(item_id);
-            order.RemoveItem(await item.GetStock());
+            await order.RemoveItem(await item.GetStock());
 
 
         }
@@ -69,10 +69,10 @@ namespace API.Controllers
             var order = _client.GetGrain<IOrderGrain>(order_id);
 
             var result = await order.Checkout();
-            //Cancel checkout if something goes wrong.
+       
 
             if (result)
-          {
+            {
                 var user_id = await order.GetUser();
 
                 var total_cost = await order.GetTotalCost();
@@ -84,6 +84,7 @@ namespace API.Controllers
                 }
                 catch (NotEnoughCreditsException)
                 {
+                    await order.CancelCheckout();
                     return false;
                 }
                 var items = await order.GetItems();
@@ -104,8 +105,7 @@ namespace API.Controllers
                         await user_grain.ChangeCredit(cost);
                     }
                 }
-                //remove from stock
-                //what if some substraction failed?
+            
             }
             return result;
         }

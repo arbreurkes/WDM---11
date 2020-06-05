@@ -8,7 +8,7 @@ from locust import HttpLocust, TaskSet, TaskSequence, seq_task, between
 ORDER_URL = "https://localhost:5001"
 
 
-#ORDER_URL = "https://wdmorleans.azurewebsites.net/"
+ORDER_URL = "https://wdmorleans.azurewebsites.net/"
 PAYMENT_URL = ORDER_URL
 STOCK_URL = PAYMENT_URL
 USER_URL = STOCK_URL
@@ -17,7 +17,7 @@ USER_URL = STOCK_URL
 
 def create_item(self):
     price = random.randint(1, 10)
-    response = self.client.post(f"{STOCK_URL}/stock/item/create/{price}", name="/stock/item/create/[price]",verify=False)
+    response = self.client.post(f"{STOCK_URL}/stock/item/create/{price}", name="/stock/item/create/[price]")
     self.item_ids.append(response.json()['item_id'])
 
 

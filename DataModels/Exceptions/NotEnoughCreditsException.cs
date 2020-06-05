@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace API.Controllers
+namespace DataModels
 {
     [Serializable]
     public class NotEnoughCreditsException : Exception

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace OrleansBasics
+namespace DataModels
 {
     [Serializable]
     public class StockDoesNotExistsException : Exception

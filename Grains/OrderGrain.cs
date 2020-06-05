@@ -157,11 +157,11 @@ namespace Grains
 
         public Task<bool> CancelCheckout()
         {
-            // foreach (Stock item in order.Items)
-            // {
-            //     //ToDo: revert stock transaction.
-            // }
-            return Task.FromResult(_order.State.CancelCheckout());
+            if (!_order.State.CancelCheckout())
+            {
+                throw new OrderDoesNotExistsException();
+            }
+            return Task.FromResult(true);
         }
 
         public Task<Guid> GetUser()
