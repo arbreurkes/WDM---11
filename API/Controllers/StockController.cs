@@ -22,13 +22,11 @@ namespace API.Controllers
         public async Task<int> GetAvailability(Guid id)
         {
 
-            //Get item grain and ask for its availability ?
-            //Should the item grain have a stock class that holds the item information and its quantity?
-
-            //Is the availability the quantity or if its available or not?
+            
 
             var stock = _client.GetGrain<IStockGrain>(id);
 
+           
             return await stock.GetAmount();
         }
         [HttpGet("find/{item_id}")]

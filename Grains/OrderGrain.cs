@@ -4,7 +4,9 @@ using DataModels;
 using Infrastructure.Interfaces;
 using Orleans;
 using Orleans.Runtime;
-using OrleansBasics;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Grains
 {
@@ -16,6 +18,7 @@ namespace Grains
             IPersistentState<Order> order)
         {
             _order = order;
+           
         }
 
         /// <summary>
@@ -69,7 +72,7 @@ namespace Grains
             
             if (item.Exists)
             {
-                Guid id = item.ID.Value;
+                Guid id = item.ID;
 
                 if (_order.State.Items.ContainsKey(id))
                 {
@@ -96,7 +99,7 @@ namespace Grains
             
             if (item.Exists)
             {
-                Guid id = item.ID.Value;
+                Guid id = item.ID;
 
                 if (_order.State.Items.ContainsKey(id))
                 {
@@ -128,9 +131,13 @@ namespace Grains
             return Task.FromResult(_order.State.Total);
         }
 
-        public Task<bool> GetStatus()
+        public Task<Payment> GetStatus()
         {
-            return Task.FromResult(_order.State.Exists && _order.State.Completed);
+            if (!_order.State.Exists)
+            {
+                throw new OrderDoesNotExistsException();
+            }
+            return Task.FromResult(new Payment { ID = this.GetPrimaryKey(), Paid = _order.State.Completed });
         }
 
         public Task<bool> Checkout()
@@ -142,7 +149,7 @@ namespace Grains
             return Task.FromResult(_order.State.Checkout());
         }
 
-        //Complete === Checkout ?
+        //Complete === Checkout && Paid
         public Task<bool> Complete()
         {
             return Task.FromResult(_order.State.Complete());
@@ -166,6 +173,18 @@ namespace Grains
 
             throw new OrderDoesNotExistsException();
         }
+
+
+        public Task<List<OrderItem>> GetItems()
+        {
+            return Task.FromResult(new List<OrderItem>(_order.State.Items.Values));
+        }
+
+        public Task<bool> CancelComplete()
+        {
+            return Task.FromResult(_order.State.CancelComplete());
+        }
+
 
         public Task<bool> ClearOrder()
         {

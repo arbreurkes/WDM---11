@@ -3,21 +3,28 @@ using DataModels;
 using Infrastructure.Interfaces;
 using Orleans;
 using Orleans.Runtime;
-using OrleansBasics;
+using Orleans.Transactions.Abstractions;
+using System.Threading.Tasks;
+
 
 namespace Grains
 {
     public class StockGrain : Grain, IStockGrain
     {
         private readonly IPersistentState<Stock> _stock;
+        private readonly ITransactionalState<Stock> _tstock;
 
+        public StockGrain([PersistentState("stock", "stockStore")] IPersistentState<Stock> stock,[TransactionalState("tstock", "transactionStore")] ITransactionalState<Stock> tstock)
 
-        public StockGrain([PersistentState("order", "orderStore")] IPersistentState<Stock> stock)
         {
             _stock = stock;
+            _tstock = tstock;
         }
 
+
+        [Transaction(TransactionOption.CreateOrJoin)]
         public Task<bool> ChangeAmount(int amount)
+
         {
             if (!_stock.State.Exists)
             {
@@ -26,6 +33,7 @@ namespace Grains
             if (_stock.State.Quantity + amount > 0)
             {
                 _stock.State.Quantity += amount;
+                //If stock == 0, remove from database? 
             }
             else
             {

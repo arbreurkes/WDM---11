@@ -3,25 +3,26 @@ using DataModels;
 using Infrastructure.Interfaces;
 using Orleans;
 using Orleans.Runtime;
-using OrleansBasics;
+using Orleans.Transactions.Abstractions;
+using System.Threading.Tasks;
+
 
 namespace Grains
 {
     public class UserGrain : Grain, IUserGrain
     {
         private readonly IPersistentState<User> _user;
-
-        public UserGrain([PersistentState("user", "userStore")] IPersistentState<User> user)
+        private readonly ITransactionalState<User> _tuser;
+        public UserGrain([PersistentState("user", "userStore")] IPersistentState<User> user,[TransactionalState("tuser", "transactionStore")]  ITransactionalState<User> tuser)
         {
             _user = user;
+            _tuser = tuser;
         }
-        //This object should be changed to persistentstate/transactionalstate to allow persistence or transactions. 
-
         public Task<User> CreateUser()
         {
-            //What if user already exists ? 
 
             _user.State.Create(this.GetPrimaryKey());
+           
             return Task.FromResult(_user.State);
         }
 
@@ -58,13 +59,20 @@ namespace Grains
 
             return Task.FromResult(_user.State);
         }
-
         public Task<bool> ChangeCredit(decimal amount)
         {
             if (!_user.State.Exists)
             {
                 throw new UserDoesNotExistsException();
             }
+
+            if (_user.State.Credit + amount > 0)
+            {
+                _user.State.Credit += amount;
+               
+                result = true;
+            }
+
 
             if (_user.State.Credit + amount < decimal.Zero) return Task.FromResult(false);
             _user.State.Credit += amount;

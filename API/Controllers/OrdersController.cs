@@ -27,6 +27,7 @@ namespace API.Controllers
             return await order.CreateOrder(user_id);
         }
 
+    
         [HttpDelete("remove/{id}")]
         public async Task<bool> RemoveOrder(Guid id)
         {
@@ -71,13 +72,40 @@ namespace API.Controllers
             //Cancel checkout if something goes wrong.
 
             if (result)
-            {
+          {
                 var user_id = await order.GetUser();
 
+                var total_cost = await order.GetTotalCost();
                 //pay
-                await _client.GetGrain<IUserGrain>(user_id).ChangeCredit(-await order.GetTotalCost());
-
+                var user_grain = _client.GetGrain<IUserGrain>(user_id);
+                try
+                {
+                    await user_grain.ChangeCredit(-total_cost); //This can fail.
+                }
+                catch (NotEnoughCreditsException)
+                {
+                    return false;
+                }
+                var items = await order.GetItems();
+                
+               
+                //Change to transaction thing, bit easier perhaps.
+                foreach(var orderItem in items)
+                {
+                    decimal cost = orderItem.Total;
+                    try
+                    {
+                        await _client.GetGrain<IStockGrain>(orderItem.Item.ID).ChangeAmount(-orderItem.Quantity);
+                        total_cost -= cost;
+                    }
+                    catch(InvalidQuantityException)
+                    {
+                        
+                        await user_grain.ChangeCredit(cost);
+                    }
+                }
                 //remove from stock
+                //what if some substraction failed?
             }
             return result;
         }

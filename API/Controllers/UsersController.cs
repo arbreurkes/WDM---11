@@ -39,7 +39,7 @@ namespace API.Controllers
             var id = Guid.NewGuid();
             var user = _client.GetGrain<IUserGrain>(id);
 
-            return user.CreateUser(); //Should it be user_id : {user_id} ?
+            return user.CreateUser(); 
         }
 
         [HttpDelete("remove/{user_id}")]
@@ -53,10 +53,8 @@ namespace API.Controllers
         [Produces("application/json")]
         public Task<User> GetUser(Guid user_id)
         {
-            //What if it doesnt exist?
-            //When the grain is invoked should it check the db or something if the id exists? 
             var user = _client.GetGrain<IUserGrain>(user_id);
-
+         
             //Send ok or not found.
             return user.GetUser();
         }
@@ -66,7 +64,7 @@ namespace API.Controllers
         {
             var user = _client.GetGrain<IUserGrain>(id);
             return user.GetCredit();
-        }
+        } 
 
         [HttpPost("credit/substract/{id}/{amount}")]
         public Task<bool> SubstractCredit(Guid id, decimal amount)
@@ -81,6 +79,6 @@ namespace API.Controllers
             var user = _client.GetGrain<IUserGrain>(user_id);
             return user.ChangeCredit(amount);
         }
-
+       
     }
 }

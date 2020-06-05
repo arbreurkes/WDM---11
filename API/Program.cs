@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Grains;
 using Infrastructure.Interfaces;
 using OrleansBasics;
+using Microsoft.AspNetCore.Http;
 
 namespace ShoppingCart
 {
@@ -26,6 +27,20 @@ namespace ShoppingCart
                         {
                             app.UseDeveloperExceptionPage();
                         }
+                        else
+                        {
+                            app.UseExceptionHandler(errorApp =>
+                            {
+                                errorApp.Run(async context =>
+                                {
+                                    context.Response.StatusCode = 500; // or 404 ? 
+                                    context.Response.ContentType = "application/json";
+                                    await context.Response.WriteAsync("Forbidden");
+                                    await context.Response.CompleteAsync();
+
+                                });
+                            });
+                        }
 
                         app.UseHttpsRedirection();
                         app.UseRouting();
@@ -39,6 +54,7 @@ namespace ShoppingCart
                         {
                             d.UseOrleansDashboard();
                         });
+                     
 
                     });
                 })
@@ -50,8 +66,8 @@ namespace ShoppingCart
 
                     string connectionString = conf.GetConnectionString("BartsAzureTableStorage");
                     siloBuilder
-                    //.UseLocalhostClustering()
-                    .UseAzureStorageClustering(options => options.ConnectionString = connectionString)
+                    .UseLocalhostClustering()
+                    //.UseAzureStorageClustering(options => options.ConnectionString = connectionString)
                     .Configure<ClusterOptions>(opts =>
                     {
                         opts.ClusterId = "wdm-group11-orleans-silocluster";
@@ -92,7 +108,15 @@ namespace ShoppingCart
                 .Configure<EndpointOptions>(opts =>
                     {
                         opts.AdvertisedIPAddress = IPAddress.Loopback;
-                    });
+                    })
+                .AddAzureTableTransactionalStateStorage(
+                    name: "transactionStore",
+                    configureOptions: options =>
+                    {
+                        options.TableName = "transactionStore";
+                        options.ConnectionString = connectionString;
+                    })
+                .UseTransactions();
                 })
                 .ConfigureServices(services =>
                 {

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DataModels
 {
@@ -35,6 +36,7 @@ namespace DataModels
         [JsonIgnore]
         public bool CanComplete => Exists && CheckedOut && !Completed;
 
+
         [JsonProperty(PropertyName = "total_cost")]
         public decimal Total => Items.Values.Sum(i => i.Quantity * i.Item.Price);
 
@@ -48,19 +50,19 @@ namespace DataModels
             CreatedAt = DateTime.Now;
         }
 
-        public Boolean Checkout()
+        public bool Checkout()
         {
             if (CanCheckout)
             {
                 CheckedOutAt = DateTime.Now;
+                CompletedAt = DateTime.Now;
                 return true;
             }
 
             return false;
         }
 
-        //Not used for now
-        public Boolean Complete()
+        public bool Complete()
         {
             if (CanComplete)
             {
@@ -71,7 +73,7 @@ namespace DataModels
             return false;
         }
 
-        public Boolean CancelCheckout()
+        public bool CancelCheckout()
         {
             if (CheckedOut && !Completed)
             {
@@ -81,5 +83,23 @@ namespace DataModels
 
             return false;
         }
+
+        public bool CancelComplete()
+        {
+            if (Completed)
+            {
+                CompletedAt = null;
+                return true;
+            }
+            return false;
+        }
+    }
+
+    public class Payment
+    {
+        [JsonProperty("order_id")]
+        public Guid ID { get; set; }
+        [JsonProperty("paid")]
+        public bool Paid { get; set; }
     }
 }

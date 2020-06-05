@@ -1,6 +1,7 @@
 ﻿using DataModels;
 using Orleans;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Infrastructure.Interfaces
@@ -19,7 +20,7 @@ namespace Infrastructure.Interfaces
 
         Task<decimal> GetTotalCost();
 
-        Task<bool> GetStatus();
+        Task<Payment> GetStatus();
 
         Task<bool> Checkout();
 
@@ -27,8 +28,15 @@ namespace Infrastructure.Interfaces
 
         Task<bool> CancelCheckout();
 
+        Task<bool> CancelComplete();
+
         Task<Guid> GetUser();
 
+
+        Task<List<OrderItem>> GetItems();
+     
+
         Task<bool> ClearOrder();
+
     }
 }

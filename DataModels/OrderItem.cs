@@ -11,7 +11,10 @@ namespace DataModels
         [JsonProperty(PropertyName = "item")]
         public Stock Item { get; set; } //The available quantity should not be returned. Right ?
         [JsonProperty(PropertyName = "quantity")]
-        public int Quantity { get; set; }
+        public int Quantity { get; set; } = 1;// If this exists, its at least 1
+
+        [JsonIgnore]
+        public decimal Total => Item.Price * Quantity;
 
         public void IncQuantity()
         {
