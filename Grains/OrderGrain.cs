@@ -119,9 +119,13 @@ namespace OrleansBasics
             return Task.FromResult(_order.State.Total);
         }
 
-        public Task<bool> GetStatus()
+        public Task<Payment> GetStatus()
         {
-            return Task.FromResult(_order.State.Exists && _order.State.Completed);
+            if (!_order.State.Exists)
+            {
+                throw new OrderDoesNotExistsException();
+            }
+            return Task.FromResult(new Payment { ID = this.GetPrimaryKey(), Paid = _order.State.Completed });
         }
 
         public Task<bool> Checkout()
@@ -179,9 +183,6 @@ namespace OrleansBasics
             return Task.FromResult(_order.State.CancelComplete());
         }
 
-        public Task<string> GetPaid()
-        {
-            return _order.State.Status();
-        }
+     
     }
 }

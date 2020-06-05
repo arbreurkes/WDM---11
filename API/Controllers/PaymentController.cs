@@ -1,4 +1,5 @@
-﻿using Infrastructure.Interfaces;
+﻿using DataModels;
+using Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Orleans;
 using System;
@@ -50,12 +51,11 @@ namespace API.Controllers
         }
 
         [HttpGet("status/{order_id}")]
-        public async Task<string> GetStatus(Guid order_id)
+        public async Task<Payment> GetStatus(Guid order_id)
         {
             var order = _client.GetGrain<IOrderGrain>(order_id);
-            bool status = await order.GetStatus();
 
-            return await order.GetPaid();
+            return await order.GetStatus();
         }
     }
 }

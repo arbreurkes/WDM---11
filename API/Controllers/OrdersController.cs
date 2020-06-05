@@ -100,7 +100,8 @@ namespace API.Controllers
                     }
                     catch(InvalidQuantityException)
                     {
-                        user_grain.ChangeCredit(cost);
+                        
+                        await user_grain.ChangeCredit(cost);
                     }
                 }
                 //remove from stock

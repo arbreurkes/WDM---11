@@ -36,8 +36,6 @@ namespace DataModels
         [JsonIgnore]
         public bool CanComplete => Exists && CheckedOut && !Completed;
 
-        //Hm, I dont think this should be here 
-        public Payment Status => new Payment { ID = ID, Paid = Completed };
 
         [JsonProperty(PropertyName = "total_cost")]
         public decimal Total => Items.Values.Sum(i => i.Quantity * i.Item.Price);
