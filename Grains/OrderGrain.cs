@@ -1,17 +1,19 @@
-﻿using DataModels;
+﻿using System;
+using System.Threading.Tasks;
+using DataModels;
 using Infrastructure.Interfaces;
 using Orleans;
 using Orleans.Runtime;
-using System;
-using System.Threading.Tasks;
+using OrleansBasics;
 
-namespace OrleansBasics
+namespace Grains
 {
     public class OrderGrain : Grain, IOrderGrain
     {
         private readonly IPersistentState<Order> _order;
 
-        public OrderGrain([PersistentState("order", "orderStore")] IPersistentState<Order> order)
+        public OrderGrain([PersistentState("order", "orderStore")]
+            IPersistentState<Order> order)
         {
             _order = order;
         }
@@ -23,18 +25,10 @@ namespace OrleansBasics
         /// <returns></returns>
         public Task<Order> CreateOrder(Guid userId)
         {
-            try
-            {
-                _order.State.Create(userId, this.GetPrimaryKey());
-                //_order.WriteStateAsync();
+            _order.State.Create(userId, this.GetPrimaryKey());
+            //_order.WriteStateAsync();
 
-                return Task.FromResult(_order.State);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-                return null;
-            }
+            return Task.FromResult(_order.State);
         }
 
         public Task<bool> RemoveOrder()
@@ -66,8 +60,13 @@ namespace OrleansBasics
             }
         }
 
-        public void AddItem(Stock item)
+        public Task<bool> AddItem(Stock item)
         {
+            if (!_order.State.Exists)
+            {
+                throw new OrderDoesNotExistsException();
+            }
+            
             if (item.Exists)
             {
                 Guid id = item.ID.Value;
@@ -78,14 +77,23 @@ namespace OrleansBasics
                 }
                 else // catch exception and remove if?
                 {
-                    OrderItem oi = new OrderItem() { Item = item }; // like this? or change constructor
+                    OrderItem oi = new OrderItem() {Item = item, Quantity = 1}; // like this? or change constructor
                     _order.State.Items.Add(id, oi);
                 }
+                
+                return Task.FromResult(true);
             }
+
+            return Task.FromResult(false);
         }
 
-        public void RemoveItem(Stock item)
+        public Task<bool> RemoveItem(Stock item)
         {
+            if (!_order.State.Exists)
+            {
+                throw new OrderDoesNotExistsException();
+            }
+            
             if (item.Exists)
             {
                 Guid id = item.ID.Value;
@@ -95,15 +103,17 @@ namespace OrleansBasics
                     try
                     {
                         _order.State.Items[id].DecQuantity();
+                        return Task.FromResult(true);
                     }
                     catch (InvalidQuantityException)
                     {
                         _order.State.Items.Remove(id);
+                        return Task.FromResult(false);
                     }
                 }
             }
 
-            // what if item was not ordered?
+            return Task.FromResult(false);
         }
 
         public Task<decimal> GetTotalCost()
@@ -112,6 +122,7 @@ namespace OrleansBasics
             {
                 throw new OrderDoesNotExistsException();
             }
+
             _order.WriteStateAsync();
 
             return Task.FromResult(_order.State.Total);
@@ -124,38 +135,26 @@ namespace OrleansBasics
 
         public Task<bool> Checkout()
         {
-            if (!_order.State.CanCheckout) return Task.FromResult(false);
-
             // foreach (Stock item in order.Items)
             // {
             //     //ToDo: subtract stock.
             // }
-
-            _order.State.Checkout();
-
-            return Task.FromResult(true);
+            return Task.FromResult(_order.State.Checkout());
         }
 
         //Complete === Checkout ?
         public Task<bool> Complete()
         {
-            _order.State.Complete();
-
-            return Task.FromResult(true);
+            return Task.FromResult(_order.State.Complete());
         }
 
         public Task<bool> CancelCheckout()
         {
-            if (!_order.State.CheckedOut) return Task.FromResult(false);
-
             // foreach (Stock item in order.Items)
             // {
             //     //ToDo: revert stock transaction.
             // }
-
-            _order.State.CancelCheckout();
-
-            return Task.FromResult(true);
+            return Task.FromResult(_order.State.CancelCheckout());
         }
 
         public Task<Guid> GetUser()
@@ -164,9 +163,15 @@ namespace OrleansBasics
             {
                 return Task.FromResult(this.GetPrimaryKey());
             }
+
             throw new OrderDoesNotExistsException();
         }
 
-
+        public Task<bool> ClearOrder()
+        {
+            _order.ClearStateAsync();
+            
+            return Task.FromResult(true);
+        }
     }
 }

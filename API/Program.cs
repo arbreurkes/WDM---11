@@ -8,6 +8,7 @@ using Orleans;
 using Orleans.Hosting;
 using Orleans.Configuration;
 using System.Threading.Tasks;
+using Grains;
 using Infrastructure.Interfaces;
 using OrleansBasics;
 

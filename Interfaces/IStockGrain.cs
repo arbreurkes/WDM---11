@@ -8,7 +8,7 @@ namespace Infrastructure.Interfaces
     {
         Task<Stock> GetStock();
 
-        Task ChangeAmount(int amount);
+        Task<bool> ChangeAmount(int amount);
         Task<int> GetAmount();
         Task<Stock> Create(decimal price);
     }

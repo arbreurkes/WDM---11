@@ -1,10 +1,11 @@
-﻿using DataModels;
+﻿using System.Threading.Tasks;
+using DataModels;
 using Infrastructure.Interfaces;
 using Orleans;
 using Orleans.Runtime;
-using System.Threading.Tasks;
+using OrleansBasics;
 
-namespace OrleansBasics
+namespace Grains
 {
     public class StockGrain : Grain, IStockGrain
     {
@@ -16,7 +17,7 @@ namespace OrleansBasics
             _stock = stock;
         }
 
-        public Task ChangeAmount(int amount)
+        public Task<bool> ChangeAmount(int amount)
         {
             if (!_stock.State.Exists)
             {
@@ -30,7 +31,8 @@ namespace OrleansBasics
             {
                 throw new InvalidQuantityException();
             }
-            return Task.FromResult(0);
+            
+            return Task.FromResult(true);
         }
 
         public Task<Stock> GetStock()
