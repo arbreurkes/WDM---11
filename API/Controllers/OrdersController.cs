@@ -75,9 +75,27 @@ namespace API.Controllers
           {
                 var user_id = await order.GetUser();
 
+                var total_cost = await order.GetTotalCost();
                 //pay
-                await _client.GetGrain<IUserGrain>(user_id).ChangeCredit(-await order.GetTotalCost());
-
+                var user_grain = _client.GetGrain<IUserGrain>(user_id);
+                await user_grain.ChangeCredit(-total_cost); //This can fail.
+                var items = await order.GetItems();
+                
+               
+                
+                foreach(var orderItem in items)
+                {
+                    decimal cost = orderItem.Total;
+                    try
+                    {
+                        await _client.GetGrain<IStockGrain>(orderItem.Item.ID).ChangeAmount(-orderItem.Quantity);
+                        total_cost -= cost;
+                    }
+                    catch(InvalidQuantityException)
+                    {
+                        user_grain.ChangeCredit(cost);
+                    }
+                }
                 //remove from stock
                 //what if some substraction failed?
             }

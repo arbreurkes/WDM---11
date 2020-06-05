@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DataModels
 {
@@ -53,6 +54,7 @@ namespace DataModels
             if (CanCheckout)
             {
                 CheckedOutAt = DateTime.Now;
+                CompletedAt = DateTime.Now;
                 return true;
             }
 
@@ -79,6 +81,16 @@ namespace DataModels
                 return true;
             }
 
+            return false;
+        }
+
+        public bool CancelComplete()
+        {
+            if (Completed)
+            {
+                CompletedAt = null;
+                return true;
+            }
             return false;
         }
     }

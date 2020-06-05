@@ -3,6 +3,7 @@ using Infrastructure.Interfaces;
 using Orleans;
 using Orleans.Runtime;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace OrleansBasics
@@ -71,7 +72,7 @@ namespace OrleansBasics
         {
             if (item.Exists)
             {
-                Guid id = item.ID.Value;
+                Guid id = item.ID;
 
                 if (_order.State.Items.ContainsKey(id))
                 {
@@ -89,7 +90,7 @@ namespace OrleansBasics
         {
             if (item.Exists)
             {
-                Guid id = item.ID.Value;
+                Guid id = item.ID;
 
                 if (_order.State.Items.ContainsKey(id))
                 {
@@ -168,6 +169,15 @@ namespace OrleansBasics
             throw new OrderDoesNotExistsException();
         }
 
+        public Task<List<OrderItem>> GetItems()
+        {
+            return Task.FromResult(new List<OrderItem>(_order.State.Items.Values));
+        }
+
+        public Task<bool> CancelComplete()
+        {
+            return Task.FromResult(_order.State.CancelComplete());
+        }
 
     }
 }

@@ -13,6 +13,9 @@ namespace DataModels
         [JsonProperty(PropertyName = "quantity")]
         public int Quantity { get; set; } = 1;// If this exists, its at least 1
 
+        [JsonIgnore]
+        public decimal Total => Item.Price * Quantity;
+
         public void IncQuantity()
         {
             Quantity += 1;
