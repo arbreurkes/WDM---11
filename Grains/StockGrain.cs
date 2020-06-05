@@ -12,11 +12,14 @@ namespace OrleansBasics
         private readonly IPersistentState<Stock> _stock;
         private readonly ITransactionalState<Stock> _tstock;
 
-        public StockGrain([PersistentState("order", "orderStore")] IPersistentState<Stock> stock)
+        public StockGrain([PersistentState("stock", "stockStore")] IPersistentState<Stock> stock,[TransactionalState("tstock", "transactionStore")] ITransactionalState<Stock> tstock)
+
         {
             _stock = stock;
+            _tstock = tstock;
         }
 
+        [Transaction(TransactionOption.CreateOrJoin)]
         public Task ChangeAmount(int amount)
         {
             if (!_stock.State.Exists)

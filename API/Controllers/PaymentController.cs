@@ -37,6 +37,7 @@ namespace API.Controllers
         public async Task<bool> CancelPayment(Guid user_id, Guid order_id)
         {
             var user = _client.GetGrain<IUserGrain>(user_id);
+            await user.GetUser();
             var order = _client.GetGrain<IOrderGrain>(order_id);
             var total = await order.GetTotalCost();
 
@@ -54,7 +55,7 @@ namespace API.Controllers
             var order = _client.GetGrain<IOrderGrain>(order_id);
             bool status = await order.GetStatus();
 
-            return await Task.FromResult("{'paid': '" + status + "'}"); //This is converting the string itself, "paid" is not being converted as an attribute.
+            return await order.GetPaid();
         }
     }
 }

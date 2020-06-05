@@ -2,6 +2,7 @@
 using Infrastructure.Interfaces;
 using Orleans;
 using Orleans.Runtime;
+using Orleans.Transactions.Abstractions;
 using System.Threading.Tasks;
 
 namespace OrleansBasics
@@ -9,13 +10,12 @@ namespace OrleansBasics
     public class UserGrain : Grain, IUserGrain
     {
         private readonly IPersistentState<User> _user;
-
-        public UserGrain([PersistentState("user", "userStore")] IPersistentState<User> user)
+        private readonly ITransactionalState<User> _tuser;
+        public UserGrain([PersistentState("user", "userStore")] IPersistentState<User> user,[TransactionalState("tuser", "transactionStore")]  ITransactionalState<User> tuser)
         {
             _user = user;
+            _tuser = tuser;
         }
-        //This object should be changed to persistentstate/transactionalstate to allow persistence or transactions. 
-
         public Task<User> CreateUser()
         {
 
@@ -57,7 +57,6 @@ namespace OrleansBasics
             return Task.FromResult(_user.State);
 
         }
-
         public Task<bool> ChangeCredit(decimal amount)
         {
             bool result = false;
@@ -69,6 +68,7 @@ namespace OrleansBasics
             if (_user.State.Credit + amount > 0)
             {
                 _user.State.Credit += amount;
+               
                 result = true;
             }
 

@@ -36,6 +36,9 @@ namespace DataModels
         [JsonIgnore]
         public bool CanComplete => Exists && CheckedOut && !Completed;
 
+        //Hm, I dont think this should be here 
+        public Payment Status => new Payment { ID = ID, Paid = Completed };
+
         [JsonProperty(PropertyName = "total_cost")]
         public decimal Total => Items.Values.Sum(i => i.Quantity * i.Item.Price);
 
@@ -49,7 +52,7 @@ namespace DataModels
             CreatedAt = DateTime.Now;
         }
 
-        public Boolean Checkout()
+        public bool Checkout()
         {
             if (CanCheckout)
             {
@@ -61,8 +64,7 @@ namespace DataModels
             return false;
         }
 
-        //Not used for now
-        public Boolean Complete()
+        public bool Complete()
         {
             if (CanComplete)
             {
@@ -73,7 +75,7 @@ namespace DataModels
             return false;
         }
 
-        public Boolean CancelCheckout()
+        public bool CancelCheckout()
         {
             if (CheckedOut && !Completed)
             {
@@ -93,5 +95,13 @@ namespace DataModels
             }
             return false;
         }
+    }
+
+    public class Payment
+    {
+        [JsonProperty("order_id")]
+        public Guid ID { get; set; }
+        [JsonProperty("paid")]
+        public bool Paid { get; set; }
     }
 }

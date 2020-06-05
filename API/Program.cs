@@ -10,6 +10,7 @@ using Orleans.Configuration;
 using System.Threading.Tasks;
 using Infrastructure.Interfaces;
 using OrleansBasics;
+using Microsoft.AspNetCore.Http;
 
 namespace ShoppingCart
 {
@@ -25,6 +26,20 @@ namespace ShoppingCart
                         {
                             app.UseDeveloperExceptionPage();
                         }
+                        else
+                        {
+                            app.UseExceptionHandler(errorApp =>
+                            {
+                                errorApp.Run(async context =>
+                                {
+                                    context.Response.StatusCode = 500; // or 404 ? 
+                                    context.Response.ContentType = "application/json";
+                                    await context.Response.WriteAsync("Forbidden");
+                                    await context.Response.CompleteAsync();
+
+                                });
+                            });
+                        }
 
                         app.UseHttpsRedirection();
                         app.UseRouting();
@@ -38,6 +53,7 @@ namespace ShoppingCart
                         {
                             d.UseOrleansDashboard();
                         });
+                     
 
                     });
                 })

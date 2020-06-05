@@ -33,5 +33,6 @@ namespace Infrastructure.Interfaces
         Task<Guid> GetUser();
 
         Task<List<OrderItem>> GetItems();
+        Task<string> GetPaid();
     }
 }

@@ -78,11 +78,18 @@ namespace API.Controllers
                 var total_cost = await order.GetTotalCost();
                 //pay
                 var user_grain = _client.GetGrain<IUserGrain>(user_id);
-                await user_grain.ChangeCredit(-total_cost); //This can fail.
+                try
+                {
+                    await user_grain.ChangeCredit(-total_cost); //This can fail.
+                }
+                catch (NotEnoughCreditsException)
+                {
+                    return false;
+                }
                 var items = await order.GetItems();
                 
                
-                
+                //Change to transaction thing, bit easier perhaps.
                 foreach(var orderItem in items)
                 {
                     decimal cost = orderItem.Total;

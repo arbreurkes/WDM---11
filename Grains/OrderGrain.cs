@@ -179,5 +179,9 @@ namespace OrleansBasics
             return Task.FromResult(_order.State.CancelComplete());
         }
 
+        public Task<string> GetPaid()
+        {
+            return _order.State.Status();
+        }
     }
 }
