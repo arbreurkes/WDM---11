@@ -12,11 +12,9 @@ namespace Grains
     {
         private readonly IPersistentState<Order> _order;
 
-        public OrderGrain([PersistentState("order", "orderStore")]
-            IPersistentState<Order> order)
+        public OrderGrain([PersistentState("order", "orderStore")] IPersistentState<Order> order)
         {
             _order = order;
-           
         }
 
         /// <summary>
@@ -28,21 +26,19 @@ namespace Grains
         {
             _order.State.Create(userId, this.GetPrimaryKey());
             //_order.WriteStateAsync();
-
             return Task.FromResult(_order.State);
         }
 
         public Task<bool> RemoveOrder()
         {
-            bool result = false;
-
-            if (_order.State.Exists)
+            if (!_order.State.Exists)
             {
-                _order.State = new Order(); // resets timestamp
-                result = true;
+                throw new OrderDoesNotExistsException();
             }
-
-            return Task.FromResult(result);
+             
+            _order.State = new Order(); // resets timestamp
+            // _order.ClearStateAsync();
+            return Task.FromResult(true);
         }
 
         /// <summary>
@@ -51,14 +47,12 @@ namespace Grains
         /// <returns></returns>
         public Task<Order> GetOrder()
         {
-            if (_order.State.Exists)
-            {
-                return Task.FromResult(_order.State);
-            }
-            else
-            {
+            if (!_order.State.Exists)
+            { 
                 throw new OrderDoesNotExistsException();
             }
+
+            return Task.FromResult(_order.State);
         }
 
         public Task<bool> AddItem(Stock item)
@@ -67,25 +61,27 @@ namespace Grains
             {
                 throw new OrderDoesNotExistsException();
             }
-            
-            if (item.Exists)
-            {
-                Guid id = item.ID;
 
-                if (_order.State.Items.ContainsKey(id))
-                {
-                    _order.State.Items[id].IncQuantity();
-                }
-                else // catch exception and remove if?
-                {
-                    OrderItem oi = new OrderItem() {Item = item, Quantity = 1}; // like this? or change constructor
-                    _order.State.Items.Add(id, oi);
-                }
-                
-                return Task.FromResult(true);
+            if (!item.Exists)
+            {
+                throw new ItemDoesNotExistException();
             }
 
-            return Task.FromResult(false);
+            Guid id = item.ID;
+
+            if (_order.State.Items.ContainsKey(id))
+            {
+                _order.State.IncQuantity(id);
+            }
+
+            else
+            {
+                OrderItem oi = new OrderItem() { Item = item, Quantity = 1 };
+                _order.State.Items.Add(id, oi);
+            }
+
+            // _order.WriteStateAsync();
+            return Task.FromResult(true);
         }
 
         public Task<bool> RemoveItem(Stock item)
@@ -94,27 +90,31 @@ namespace Grains
             {
                 throw new OrderDoesNotExistsException();
             }
-            
-            if (item.Exists)
-            {
-                Guid id = item.ID;
 
-                if (_order.State.Items.ContainsKey(id))
-                {
-                    try
-                    {
-                        _order.State.Items[id].DecQuantity();
-                        return Task.FromResult(true);
-                    }
-                    catch (InvalidQuantityException)
-                    {
-                        _order.State.Items.Remove(id);
-                        return Task.FromResult(false);
-                    }
-                }
+            if (!item.Exists)
+            {
+                throw new ItemDoesNotExistException();
             }
 
-            return Task.FromResult(false);
+            Guid id = item.ID;
+
+            if (!_order.State.Items.ContainsKey(id))
+            {
+                throw new ItemNotInOrderException();
+            }
+
+            try
+            {
+                _order.State.DecQuantity(id);
+            }
+
+            catch (InvalidQuantityException)
+            {
+                _order.State.RemoveItem(id);
+            }
+
+            // _order.WriteStateAsync();
+            return Task.FromResult(true);
         }
 
         public Task<decimal> GetTotalCost()
@@ -135,6 +135,7 @@ namespace Grains
             {
                 throw new OrderDoesNotExistsException();
             }
+
             return Task.FromResult(new Payment { ID = this.GetPrimaryKey(), Paid = _order.State.Completed });
         }
 
@@ -172,7 +173,6 @@ namespace Grains
             throw new OrderDoesNotExistsException();
         }
 
-
         public Task<List<OrderItem>> GetItems()
         {
             return Task.FromResult(new List<OrderItem>(_order.State.Items.Values));
@@ -183,11 +183,9 @@ namespace Grains
             return Task.FromResult(_order.State.CancelComplete());
         }
 
-
         public Task<bool> ClearOrder()
         {
             _order.ClearStateAsync();
-            
             return Task.FromResult(true);
         }
     }

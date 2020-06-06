@@ -12,8 +12,7 @@ namespace DataModels
         [JsonProperty(PropertyName = "price")]
         public decimal Price { get; set; } = -1;
 
-
         [JsonIgnore]
-        public bool Exists => Price >=0;
+        public bool Exists => Price >= 0;
     }
 }

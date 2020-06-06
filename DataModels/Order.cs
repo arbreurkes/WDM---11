@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace DataModels
 {
@@ -10,12 +9,18 @@ namespace DataModels
     public class Order
     {
         [JsonProperty(PropertyName = "user_id")]
-        public Guid userId { get; private set; } //FK of use
+        public Guid UserId { get; private set; } //FK of use
         
         [JsonProperty(PropertyName = "order_id")]
         public Guid ID { get; private set; }
-        //Should be saved and returned as a list.
+        
         public Dictionary<Guid, OrderItem> Items { get; } = new Dictionary<Guid, OrderItem>();
+
+        [JsonProperty(PropertyName = "items")]
+        public List<Guid> ItemsList => Items.Keys.ToList();
+
+        [JsonProperty(PropertyName = "total_cost")]
+        public decimal Total => Items.Values.Sum(i => i.Quantity * i.Item.Price);
 
         public DateTime? CreatedAt { get; private set; } = null;
         public DateTime? CheckedOutAt { get; private set; } = null;
@@ -36,16 +41,9 @@ namespace DataModels
         [JsonIgnore]
         public bool CanComplete => Exists && CheckedOut && !Completed;
 
-
-        [JsonProperty(PropertyName = "total_cost")]
-        public decimal Total => Items.Values.Sum(i => i.Quantity * i.Item.Price);
-
-
-
-
         public void Create(Guid userId, Guid orderId)
         {
-            this.userId = userId;
+            this.UserId = userId;
             this.ID = orderId;
             CreatedAt = DateTime.Now;
         }
@@ -93,7 +91,23 @@ namespace DataModels
             }
             return false;
         }
+
+        public void IncQuantity(Guid id)
+        {
+            Items[id].IncQuantity();
+        }
+
+        public void DecQuantity(Guid id)
+        {
+            Items[id].DecQuantity();
+        }
+
+        public void RemoveItem(Guid id)
+        {
+            Items.Remove(id);
+        }
     }
+
 
     public class Payment
     {

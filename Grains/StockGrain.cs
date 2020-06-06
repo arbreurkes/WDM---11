@@ -14,31 +14,27 @@ namespace Grains
         private readonly ITransactionalState<Stock> _tstock;
 
         public StockGrain([PersistentState("stock", "stockStore")] IPersistentState<Stock> stock,[TransactionalState("tstock", "transactionStore")] ITransactionalState<Stock> tstock)
-
         {
             _stock = stock;
             _tstock = tstock;
         }
 
-
         [Transaction(TransactionOption.CreateOrJoin)]
         public Task<bool> ChangeAmount(int amount)
-
         {
             if (!_stock.State.Exists)
             {
                 throw new StockDoesNotExistsException();
             }
-            if (_stock.State.Quantity + amount > 0)
-            {
-                _stock.State.Quantity += amount;
-                //If stock == 0, remove from database? 
-            }
-            else
+
+            if (_stock.State.Quantity + amount < 0 )
             {
                 throw new InvalidQuantityException();
+                //If stock == 0, remove from database? 
             }
-            
+
+            _stock.State.Quantity += amount;
+            //_stock.WriteStateAsync();
             return Task.FromResult(true);
         }
 
@@ -48,6 +44,7 @@ namespace Grains
             {
                 throw new StockDoesNotExistsException();
             }
+
             return Task.FromResult(_stock.State);
         }
 
@@ -57,6 +54,7 @@ namespace Grains
             {
                 throw new StockDoesNotExistsException();
             }
+
             return Task.FromResult(_stock.State.Quantity);
         }
 

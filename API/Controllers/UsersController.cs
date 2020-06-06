@@ -11,21 +11,6 @@ namespace API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        /*
-           /users/create/
-            POST - returns an ID
-           /users/remove/{user_id}
-            DELETE - return success/failure
-           /users/find/{user_id}
-            GET - returns a user with his/her details (id, and credit)
-           /users/credit/{user_id}
-            GET - returns the current credit of a user
-           /users/credit/subtract/{user_id}/{amount}  
-            POST - subtracts the amount from the credit of the user (e.g., to buy an order). Returns success or failure, depending on the credit status. 
-           /users/credit/add/{user_id}/{amount}  
-            POST - subtracts the amount from the credit of the user. Returns success or failure, depending on the credit status. 
-        */
-
         private readonly IClusterClient _client;
         public UsersController(IClusterClient client)
         {
@@ -34,50 +19,47 @@ namespace API.Controllers
 
         [HttpPost("create")]
         [Produces("application/json")]
-        public Task<User> CreateUser()
+        public async Task<User> CreateUser()
         {
             var id = Guid.NewGuid();
             var user = _client.GetGrain<IUserGrain>(id);
-
-            return user.CreateUser(); 
+            return await user.CreateUser(); 
         }
 
         [HttpDelete("remove/{user_id}")]
-        public Task<bool> RemoveUser(Guid user_id)
+        public async Task<bool> RemoveUser(Guid user_id)
         {
             var user = _client.GetGrain<IUserGrain>(user_id);
-            return user.RemoveUser();
+            return await user.RemoveUser();
         }
 
         [HttpGet("find/{user_id}")]
         [Produces("application/json")]
-        public Task<User> GetUser(Guid user_id)
+        public async Task<User> GetUser(Guid user_id)
         {
             var user = _client.GetGrain<IUserGrain>(user_id);
-         
-            //Send ok or not found.
-            return user.GetUser();
+            return await user.GetUser();
         }
 
         [HttpGet("credit/{id}")]
-        public Task<decimal> GetCredit(Guid id)
+        public async Task<decimal> GetCredit(Guid id)
         {
             var user = _client.GetGrain<IUserGrain>(id);
-            return user.GetCredit();
+            return await user.GetCredit();
         } 
 
         [HttpPost("credit/substract/{id}/{amount}")]
-        public Task<bool> SubstractCredit(Guid id, decimal amount)
+        public async Task<bool> SubstractCredit(Guid id, decimal amount)
         {
             var user = _client.GetGrain<IUserGrain>(id);
-            return user.ChangeCredit(-amount);
+            return await user.ChangeCredit(-amount);
         }
 
         [HttpPost("credit/add/{user_id}/{amount}")]
-        public Task<bool> AddCredit(Guid user_id, decimal amount)
+        public async Task<bool> AddCredit(Guid user_id, decimal amount)
         {
             var user = _client.GetGrain<IUserGrain>(user_id);
-            return user.ChangeCredit(amount);
+            return await user.ChangeCredit(amount);
         }
        
     }

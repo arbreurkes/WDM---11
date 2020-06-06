@@ -12,22 +12,22 @@ namespace Grains
     {
         private readonly IPersistentState<User> _user;
         private readonly ITransactionalState<User> _tuser;
-        public UserGrain([PersistentState("user", "userStore")] IPersistentState<User> user,[TransactionalState("tuser", "transactionStore")]  ITransactionalState<User> tuser)
+
+        public UserGrain([PersistentState("user", "userStore")] IPersistentState<User> user, [TransactionalState("tuser", "transactionStore")]  ITransactionalState<User> tuser)
         {
             _user = user;
             _tuser = tuser;
         }
+
         public Task<User> CreateUser()
         {
-
             _user.State.Create(this.GetPrimaryKey());
-           
+            _user.WriteStateAsync();
             return Task.FromResult(_user.State);
         }
 
         public Task<bool> RemoveUser()
         {
-            bool result = true;
 
             if (!_user.State.Exists)
             {
@@ -35,8 +35,18 @@ namespace Grains
             }
 
             //Remove user from database.
+            _user.ClearStateAsync();
+            return Task.FromResult(true);
+        }
 
-            return Task.FromResult(result);
+        public Task<User> GetUser()
+        {
+            if (!_user.State.Exists)
+            {
+                throw new UserDoesNotExistsException();
+            }
+
+            return Task.FromResult(_user.State);
         }
 
         public Task<decimal> GetCredit()
@@ -49,15 +59,6 @@ namespace Grains
             return Task.FromResult(_user.State.Credit);
         }
 
-        public Task<User> GetUser()
-        {
-            if (!_user.State.Exists)
-            {
-                throw new UserDoesNotExistsException();
-            }
-
-            return Task.FromResult(_user.State);
-        }
         public Task<bool> ChangeCredit(decimal amount)
         {
             if (!_user.State.Exists)
@@ -65,9 +66,13 @@ namespace Grains
                 throw new UserDoesNotExistsException();
             }
 
-            if (_user.State.Credit + amount < decimal.Zero) return Task.FromResult(false);
+            if (_user.State.Credit + amount < decimal.Zero)
+            {
+                throw new NotEnoughCreditException();
+            }
+                
             _user.State.Credit += amount;
-
+            _user.WriteStateAsync();
             return Task.FromResult(true);
         }
     }

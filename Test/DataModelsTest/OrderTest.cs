@@ -27,7 +27,7 @@ namespace Test.DataModelsTest
             Guid guid = Guid.NewGuid();
             _order.Create(guid, new Guid());
             
-            Assert.AreEqual(guid, _order.userId);
+            Assert.AreEqual(guid, _order.UserId);
         }
         
         /// <summary>
