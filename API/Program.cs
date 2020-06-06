@@ -10,8 +10,8 @@ using Orleans.Configuration;
 using System.Threading.Tasks;
 using Grains;
 using Infrastructure.Interfaces;
-using OrleansBasics;
 using Microsoft.AspNetCore.Http;
+using System;
 
 namespace ShoppingCart
 {
@@ -63,7 +63,6 @@ namespace ShoppingCart
                     IConfiguration conf = new ConfigurationBuilder()
                     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                     .Build();
-
                     string connectionString = conf.GetConnectionString("BartsAzureTableStorage");
                     siloBuilder
                     .UseLocalhostClustering()
@@ -77,6 +76,12 @@ namespace ShoppingCart
                 {
                     parts.AddApplicationPart(typeof(IOrderGrain).Assembly).WithReferences();
                     parts.AddApplicationPart(typeof(OrderGrain).Assembly).WithReferences();
+                })
+                .Configure<GrainCollectionOptions>(options =>
+                {
+                    options.CollectionAge = TimeSpan.FromMinutes(5);
+                    options.ClassSpecificCollectionAge[typeof(IStockGrain).FullName] = TimeSpan.FromMinutes(10);
+
                 })
                 .AddAzureTableGrainStorage(
                     name: "orderStore",
