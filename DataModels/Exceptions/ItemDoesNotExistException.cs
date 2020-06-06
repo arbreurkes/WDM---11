@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Grains
+namespace DataModels
 {
     [Serializable]
     public class ItemDoesNotExistException : Exception
