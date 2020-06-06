@@ -1,7 +1,5 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DataModels
 {
@@ -10,8 +8,9 @@ namespace DataModels
     {
         [JsonProperty(PropertyName = "item")]
         public Stock Item { get; set; } //The available quantity should not be returned. Right ?
+
         [JsonProperty(PropertyName = "quantity")]
-        public int Quantity { get; set; } = 1;// If this exists, its at least 1
+        public int Quantity { get; set; } = 1; // If this exists, its at least 1
 
         [JsonIgnore]
         public decimal Total => Item.Price * Quantity;
@@ -23,11 +22,11 @@ namespace DataModels
 
         public void DecQuantity()
         {
-            if (Quantity - 1 < 0)
+            if (Quantity - 1 == 0)
             {
                 throw new InvalidQuantityException();
             }
-            
+
             Quantity -= 1;
         }
     }
