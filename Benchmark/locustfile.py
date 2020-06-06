@@ -8,7 +8,7 @@ from locust import HttpLocust, TaskSet, TaskSequence, seq_task, between
 ORDER_URL = "https://localhost:5001"
 
 
-ORDER_URL = "https://wdmorleans.azurewebsites.net/"
+#ORDER_URL = "https://wdmorleans.azurewebsites.net/"
 PAYMENT_URL = ORDER_URL
 STOCK_URL = PAYMENT_URL
 USER_URL = STOCK_URL
@@ -17,7 +17,7 @@ USER_URL = STOCK_URL
 
 def create_item(self):
     price = random.randint(1, 10)
-    response = self.client.post(f"{STOCK_URL}/stock/item/create/{price}", name="/stock/item/create/[price]")
+    response = self.client.post(f"{STOCK_URL}/stock/item/create/{price}", name="/stock/item/create/[price]",verify = False)
     self.item_ids.append(response.json()['item_id'])
 
 
@@ -88,6 +88,14 @@ def make_items_stock_zero(self, item_idx: int):
     self.client.post(f"{STOCK_URL}/stock/subtract/{self.item_ids[item_idx]}/{stock_to_subtract}",
                      name="/stock/add/[item_id]/[number]")
 
+def cancel_payment(self):
+    self.client.post(f"{PAYMENT_URL}/payment/cancel/{self.user_id}/{self.order_id}",name="/cancel/[user_id]/[order_id]")
+    result = self.client.get(f"{PAYMENT_URL}/payment/status/{self.order_id}",name="/status/[order_id]").json()["paid"]
+    if(result == True):
+        response.failure("Payment was not properly canceled")
+    else:
+        responce.success()
+        
 
 class LoadTest1(TaskSequence):
     """
@@ -148,6 +156,9 @@ class LoadTest2(TaskSequence):
 
     @seq_task(7)
     def user_checks_out_order(self): checkout_order(self)
+    
+    @seq_task(8)
+    def payment_is_cancelled(self): cancel_payment(self)
 
 
 class LoadTest3(TaskSequence):
@@ -333,6 +344,9 @@ class LoadTest6(TaskSequence):
     @seq_task(6)
     def user_checks_out_order(self): checkout_order_that_is_supposed_to_fail(self, 1)
 
+
+class LoadTest7(TaskSequence):
+    pass
 
 class LoadTests(TaskSet):
     # [TaskSequence]: [weight of the TaskSequence]

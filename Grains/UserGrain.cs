@@ -4,7 +4,6 @@ using Infrastructure.Interfaces;
 using Orleans;
 using Orleans.Runtime;
 using Orleans.Transactions.Abstractions;
-using System.Threading.Tasks;
 
 
 namespace Grains
@@ -65,14 +64,6 @@ namespace Grains
             {
                 throw new UserDoesNotExistsException();
             }
-
-            if (_user.State.Credit + amount > 0)
-            {
-                _user.State.Credit += amount;
-               
-                result = true;
-            }
-
 
             if (_user.State.Credit + amount < decimal.Zero) return Task.FromResult(false);
             _user.State.Credit += amount;
