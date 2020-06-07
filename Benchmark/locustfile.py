@@ -346,7 +346,17 @@ class LoadTest6(TaskSequence):
 
 
 class LoadTest7(TaskSequence):
-    pass
+
+    def on_start(self):
+        self.item_ids = list()
+        self.user_id = -1
+        self.order_id = -1
+
+    def on_stop(self):
+        self.item_ids = list()
+        self.user_id = -1
+        self.order_id = -1
+   
 
 class LoadTests(TaskSet):
     # [TaskSequence]: [weight of the TaskSequence]
