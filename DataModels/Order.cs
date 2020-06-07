@@ -71,6 +71,7 @@ namespace DataModels
             return false;
         }
 
+        //Delete the order?
         public bool CancelCheckout()
         {
             if (CheckedOut && !Completed)

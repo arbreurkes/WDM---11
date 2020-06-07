@@ -5,7 +5,6 @@ using Grains;
 using Infrastructure.Interfaces;
 using NUnit.Framework;
 using Orleans.TestingHost;
-using OrleansBasics;
 
 namespace Test.GrainsTest
 {
@@ -160,13 +159,13 @@ namespace Test.GrainsTest
             await _orderGrain.Checkout();
             await _orderGrain.Complete();
 
-            Assert.True(await _orderGrain.GetStatus());
+            Assert.True((await _orderGrain.GetStatus()).Paid);
         }
         
         [Test]
         public async Task GetStatusTestOrderNotExists()
         {
-            Assert.False(await _orderGrain.GetStatus());
+            Assert.False((await _orderGrain.GetStatus()).Paid);
         }
         
         [Test]
@@ -174,7 +173,7 @@ namespace Test.GrainsTest
         {
             await _orderGrain.CreateOrder(_guid);
 
-            Assert.False(await _orderGrain.GetStatus());
+            Assert.False((await _orderGrain.GetStatus()).Paid);
         }
         
         [Test]

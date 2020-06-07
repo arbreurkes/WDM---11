@@ -4,7 +4,6 @@ using DataModels;
 using Infrastructure.Interfaces;
 using NUnit.Framework;
 using Orleans.TestingHost;
-using OrleansBasics;
 
 namespace Test.GrainsTest
 {
