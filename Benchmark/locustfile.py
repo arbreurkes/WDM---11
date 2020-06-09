@@ -14,11 +14,19 @@ STOCK_URL = PAYMENT_URL
 USER_URL = STOCK_URL
 
 
+# STOCK
+def subtract_stock(self, item_idx: int, amount: int):
+    self.client.post(f"{STOCK_URL}/stock/subtract/{self.item_ids[item_idx]}/{amount}",
+                     name="/stock/subtract/[item_id]/[number]")
 
-def create_item(self):
-    price = random.randint(1, 10)
-    response = self.client.post(f"{STOCK_URL}/stock/item/create/{price}", name="/stock/item/create/[price]",verify = False)
-    self.item_ids.append(response.json()['item_id'])
+
+def find_stock(self, item_idx: int):
+    response = self.client.post(f"{STOCK_URL}/stock/find/{self.item_ids[item_idx]}",
+                    name="/stock/find/[item_id]")
+    if 400 <= response.status_code < 600:
+        response.failure(response.text)
+    else:
+        response.success()
 
 
 def add_stock(self, item_idx: int):
@@ -27,9 +35,49 @@ def add_stock(self, item_idx: int):
                      name="/stock/add/[item_id]/[number]")
 
 
+def create_item(self):
+    price = random.randint(1, 10)
+    response = self.client.post(f"{STOCK_URL}/stock/item/create/{price}", name="/stock/item/create/[price]",verify = False)
+    self.item_ids.append(response.json()['item_id'])
+
+
+def make_items_stock_zero(self, item_idx: int):
+    stock_to_subtract = self.client.get(f"{STOCK_URL}/stock/find/{self.item_ids[item_idx]}",
+                                        name="/stock/find/[item_id]").json()['stock']
+    self.client.post(f"{STOCK_URL}/stock/subtract/{self.item_ids[item_idx]}/{stock_to_subtract}",
+                     name="/stock/subtract/[item_id]/[number]")
+
+
+# USER
 def create_user(self):
     response = self.client.post(f"{USER_URL}/users/create", name="/users/create/")
     self.user_id = response.json()['user_id']
+
+
+def remove_user(self, id: int):
+    response = self.client.post(f"{USER_URL}/users/remove/{id}", name="/users/remove/[id]")
+    if 400 <= response.status_code < 600:
+        response.failure(response.text)
+    else:
+        response.success()
+
+
+def find_user(self):
+    response = self.client.post(f"{STOCK_URL}/user/find/{self.user_id}",
+                                name="/user/find/[user_id]")
+    if 400 <= response.status_code < 600:
+        response.failure(response.text)
+    else:
+        response.success()
+
+
+def subtract_balance_from_user(self, amount: int):
+    response = self.client.post(f"{USER_URL}/users/credit/subtract/{self.user_id}/{amount}",
+                     name="/users/credit/subtract/[user_id]/[amount]")
+    if 400 <= response.status_code < 600:
+        response.failure(response.text)
+    else:
+        response.success()
 
 
 def add_balance_to_user(self):
@@ -38,15 +86,32 @@ def add_balance_to_user(self):
                      name="/users/credit/add/[user_id]/[amount]")
 
 
+# ORDER
 def create_order(self):
     response = self.client.post(f"{ORDER_URL}/orders/create/{self.user_id}", name="/orders/create/[user_id]")
     self.order_id = response.json()['order_id']
 
 
+def remove_order(self):
+    response = self.client.post(f"{ORDER_URL}/orders/remove/{self.order_id}", name="/orders/remove/[order_id]")
+    if 400 <= response.status_code < 600:
+        response.failure(response.text)
+    else:
+        response.success()
+
+
+def find_order(self):
+    response = self.client.post(f"{ORDER_URL}/orders/find/{self.order_id}", name="/orders/find/[order_id]")
+    if 400 <= response.status_code < 600:
+        response.failure(response.text)
+    else:
+        response.success()
+
+
 def add_item_to_order(self, item_idx: int):
     response = self.client.post(f"{ORDER_URL}/orders/addItem/{self.order_id}/{self.item_ids[item_idx]}",
                                 name="/orders/addItem/[order_id]/[item_id]", catch_response=True)
-    if 400 <= response.status_code < 500:
+    if 400 <= response.status_code < 600:
         response.failure(response.text)
     else:
         response.success()
@@ -55,7 +120,7 @@ def add_item_to_order(self, item_idx: int):
 def remove_item_from_order(self, item_idx: int):
     response = self.client.delete(f"{ORDER_URL}/orders/removeItem/{self.order_id}/{self.item_ids[item_idx]}",
                                   name="/orders/removeItem/[order_id]/[item_id]", catch_response=True)
-    if 400 <= response.status_code < 500:
+    if 400 <= response.status_code < 600:
         response.failure(response.text)
     else:
         response.success()
@@ -64,7 +129,7 @@ def remove_item_from_order(self, item_idx: int):
 def checkout_order(self):
     response = self.client.post(f"{ORDER_URL}/orders/checkout/{self.order_id}", name="/orders/checkout/[order_id]",
                                 catch_response=True)
-    if 400 <= response.status_code < 500:
+    if 400 <= response.status_code < 600:
         response.failure(response.text)
     else:
         response.success()
@@ -82,16 +147,19 @@ def checkout_order_that_is_supposed_to_fail(self, reason: int):
             response.failure("This was supposed to fail: Not enough credit")
 
 
-def make_items_stock_zero(self, item_idx: int):
-    stock_to_subtract = self.client.get(f"{STOCK_URL}/stock/find/{self.item_ids[item_idx]}",
-                                        name="/stock/find/[item_id]").json()['stock']
-    self.client.post(f"{STOCK_URL}/stock/subtract/{self.item_ids[item_idx]}/{stock_to_subtract}",
-                     name="/stock/add/[item_id]/[number]")
+# Payment
+def payment_pay(self):
+    response = self.client.post(f"{PAYMENT_URL}/payment/pay/{self.user_id}/{self.order_id}/0",name="/pay/[user_id]/[order_id]/0")
+    if 400 <= response.status_code < 600:
+        response.failure(response.text)
+    else:
+        response.success()
+
 
 def cancel_payment(self):
     self.client.post(f"{PAYMENT_URL}/payment/cancel/{self.user_id}/{self.order_id}",name="/cancel/[user_id]/[order_id]")
-    result = self.client.get(f"{PAYMENT_URL}/payment/status/{self.order_id}",name="/status/[order_id]").json()["paid"]
-    if(result == True):
+    response = self.client.get(f"{PAYMENT_URL}/payment/status/{self.order_id}",name="/status/[order_id]").json()["paid"]
+    if(response == True):
         response.failure("Payment was not properly canceled")
     else:
         responce.success()
@@ -121,6 +189,17 @@ def checkout_check_credits(self):
     else:
        response.failure("Inconsistent credits after checkout")
         
+
+        response.success()
+
+
+def payment_status(self):
+    response = self.client.get(f"{PAYMENT_URL}/payment/status/{self.order_id}",name="/status/[order_id]").json()
+    if 400 <= response.status_code < 600:
+        response.failure(response.text)
+    else:
+        response.success()
+
 
 class LoadTest1(TaskSequence):
     """
