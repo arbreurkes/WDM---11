@@ -11,10 +11,7 @@ namespace API.Controllers
     [ApiController]
     public class PaymentController : ControllerBase
     {
-        // /payment/pay/{user_id}/{order_id}
-        // /payment/cancel/{user_id}/{order_id}
-        // /payment/status/{order_id}
-
+   
         private readonly IClusterClient _client;
 
         public PaymentController(IClusterClient client)

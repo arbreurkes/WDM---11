@@ -95,6 +95,31 @@ def cancel_payment(self):
         response.failure("Payment was not properly canceled")
     else:
         responce.success()
+
+def get_credits(self):
+    
+    credits = self.client.get(f"{USER_URL}/users/find/{self.user_id}",
+                                        name="/users/find/[user_id]").json()['credits']
+    return credits    
+
+
+def get_order_cost(self):
+    
+    total = self.client.get(f"{ORDER_URL}/orders/find/{self.order_id}",
+                                        name="/orders/find/[order_id]").json()['total_cost']
+    return total   
+    
+def checkout_check_credits(self):
+    total = get_order_cost(self)
+    credits = get_credits(self)
+    response = self.client.post(f"{ORDER_URL}/orders/checkout/{self.order_id}", name="/orders/checkout/[order_id]",
+                                catch_response=True)
+    new_credits = get_credits(self)
+     
+    if(total-credits == new_credits):
+       responce.success()
+    else:
+       response.failure("Inconsistent credits after checkout")
         
 
 class LoadTest1(TaskSequence):
@@ -343,33 +368,93 @@ class LoadTest6(TaskSequence):
 
     @seq_task(6)
     def user_checks_out_order(self): checkout_order_that_is_supposed_to_fail(self, 1)
-
-
+    
+   
 class LoadTest7(TaskSequence):
 
+    """
+    Scenario where user adds a lot of items to its order and waits before checking out.
+    """
     def on_start(self):
         self.item_ids = list()
         self.user_id = -1
         self.order_id = -1
+        self.balance = 0
 
     def on_stop(self):
         self.item_ids = list()
         self.user_id = -1
         self.order_id = -1
-   
+        
+    @seq_task(1)
+    def admin_creates_item1(self): 
+        create_item(self)
+        add_stock(self,0)
+
+    @seq_task(2)
+    def admin_creates_item3(self): 
+        create_item(self)
+        add_stock(self,1)
+    @seq_task(3)
+    def admin_creates_item4(self): 
+        create_item(self)
+        add_stock(self,2)
+    @seq_task(4)
+    def admin_creates_item5(self): 
+        create_item(self)
+    @seq_task(5)
+    def user_creates_account(self): create_user(self)
+
+    @seq_task(6)
+    def user_creates_order(self): create_order(self)
+
+    @seq_task(7)
+    def user_adds_balance(self): 
+        add_balance_to_user(self)
+      
+
+    @seq_task(8)
+    def user_adds_item_to_order(self): 
+        for i in range(20):
+            add_item_to_order(self, randrange(4))
+            
+    @seq_task(9)
+    def user_adds_more_item_to_order(self): 
+        for i in range(15):
+            add_item_to_order(self, randrange(4))
+            
+
+
+    @seq_task(10)
+    def do_nothing1(self):
+        pass
+        
+    @seq_task(11)
+    def do_nothing2(self):
+        pass  
+        
+    @seq_task(12)
+    def do_nothing3(self):
+        pass            
+        
+    @seq_task(13)
+    def user_checkouts(self): checkout_check_credits(self)
+        
+        
 
 class LoadTests(TaskSet):
     # [TaskSequence]: [weight of the TaskSequence]
     tasks = {
         LoadTest1: 5,
-        LoadTest2: 30,
-        LoadTest3: 25,
+        LoadTest2: 25,
+        LoadTest3: 20,
         LoadTest4: 20,
         LoadTest5: 10,
-        LoadTest6: 10
+        LoadTest6: 10,
+        LoadTest7: 10
     }
 
 
 class MicroservicesUser(HttpLocust):
     task_set = LoadTests
-    wait_time = between(1, 15)  # how much time a user waits (seconds) to run another TaskSequence
+    wait_time = between(1, 10)  # how much time a user waits (seconds) to run another TaskSequence

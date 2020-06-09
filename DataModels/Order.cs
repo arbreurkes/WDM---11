@@ -13,10 +13,10 @@ namespace DataModels
         
         [JsonProperty(PropertyName = "order_id")]
         public Guid ID { get; private set; }
-        
+        [JsonProperty(PropertyName = "items")]
         public Dictionary<Guid, OrderItem> Items { get; } = new Dictionary<Guid, OrderItem>();
 
-        [JsonProperty(PropertyName = "items")]
+        [JsonIgnore] //Deprecated
         public List<Guid> ItemsList => Items.Keys.ToList();
 
         [JsonProperty(PropertyName = "total_cost")]
