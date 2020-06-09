@@ -11,10 +11,7 @@ namespace API.Controllers
     [ApiController]
     public class PaymentController : ControllerBase
     {
-        // /payment/pay/{user_id}/{order_id}
-        // /payment/cancel/{user_id}/{order_id}
-        // /payment/status/{order_id}
-
+   
         private readonly IClusterClient _client;
 
         public PaymentController(IClusterClient client)
@@ -22,13 +19,13 @@ namespace API.Controllers
             _client = client;
         }
 
-        [HttpPost("pay/{user_id}/{order_id}")]
-        public async Task<bool> Pay(Guid user_id, Guid order_id)
+        [HttpPost("pay/{user_id}/{order_id}/{amount}")]
+        public async Task<bool> Pay(Guid user_id, Guid order_id,decimal amount)
         {
             var user = _client.GetGrain<IUserGrain>(user_id);
             var order = _client.GetGrain<IOrderGrain>(order_id);
             var total = await order.GetTotalCost();
-
+            //What to do with amount?
             if (await user.ChangeCredit(-total)) return await order.Complete();
 
             return false;

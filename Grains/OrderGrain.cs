@@ -38,6 +38,7 @@ namespace Grains
              
             _order.State = new Order(); // resets timestamp
             // _order.ClearStateAsync();
+            this.DeactivateOnIdle(); //Deactive the grain.
             return Task.FromResult(true);
         }
 
