@@ -2,7 +2,10 @@
 using Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Orleans;
+using ShoppingCart;
 using System;
+using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace API.Controllers
@@ -12,10 +15,12 @@ namespace API.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly IClusterClient _client;
-
+        private readonly HttpClient _httpClient;
         public OrdersController(IClusterClient client)
         {
             _client = client;
+            _httpClient = Program.HttpClient;
+
         }
 
         [HttpPost("create/{user_id}")]
@@ -60,49 +65,59 @@ namespace API.Controllers
         }
 
         [HttpPost("checkout/{order_id}")]
-        public async Task<bool> Checkout(Guid order_id)
+        public async Task Checkout(Guid order_id)
         {
             var order = _client.GetGrain<IOrderGrain>(order_id);
             var result = await order.Checkout();
+
 
             if (result)
             {
                 var user_id = await order.GetUser();
 
                 var total_cost = await order.GetTotalCost();
-                //pay
-                var user_grain = _client.GetGrain<IUserGrain>(user_id);
-
-                try
-                {
-                    await user_grain.ChangeCredit(-total_cost); //This can fail.
-                }
-
-                catch (NotEnoughCreditException)
-                {
+                var res = await _httpClient.PostAsync("http:localhost:5001//users/pay/" + user_id + "/" + total_cost,null);
+                if (!res.IsSuccessStatusCode){
                     await order.CancelCheckout();
-                    return false;
+                    throw new NotEnoughCreditException();
                 }
-
+              
                 var items = await order.GetItems();
-               
-                //Change to transaction thing, bit easier perhaps.
+
+                List<OrderItem> success = new List<OrderItem>();
+                //remove stocks..
                 foreach(var orderItem in items)
                 {
-                    decimal cost = orderItem.Total;
-                    try
-                    {
-                        await _client.GetGrain<IStockGrain>(orderItem.Item.ID).ChangeAmount(-orderItem.Quantity);
-                        total_cost -= cost;
-                    }
-                    catch(InvalidQuantityException)
-                    {
-                       await user_grain.ChangeCredit(cost);
-                    }
+                   
+
+                        var rest = await _httpClient.PostAsync("http:localhost:5001//substract/"+orderItem.Item.ID + "/" + orderItem.Quantity, null);
+
+                        if (!rest.IsSuccessStatusCode)
+                        {
+
+                            foreach(var item in success)
+                            {
+                                await _httpClient.PostAsync("localhost:5001//add/" + orderItem.Item.ID + "/" + orderItem.Quantity, null);
+                            }
+
+                            throw new StockDoesNotExistsException();
+                        }
+                        success.Add(orderItem);
+                    
+                   
                 }
             }
 
-            return result;
+        }
+
+        [HttpPost("complete/{order_id}")]
+        public async Task CompleteTask(Guid order_id)
+        {
+            var result = await _client.GetGrain<IOrderGrain>(order_id).Complete();
+            if (!result)
+            {
+                throw new Exception();
+            }
         }
 
     }

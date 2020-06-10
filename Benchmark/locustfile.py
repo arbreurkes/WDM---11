@@ -188,9 +188,6 @@ def checkout_check_credits(self):
        responce.success()
     else:
        response.failure("Inconsistent credits after checkout")
-        
-
-        response.success()
 
 
 def payment_status(self):

@@ -12,6 +12,7 @@ using Grains;
 using Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Net.Http;
 
 namespace ShoppingCart
 {
@@ -54,8 +55,6 @@ namespace ShoppingCart
                         {
                             d.UseOrleansDashboard();
                         });
-                     
-
                     });
                 })
                 .UseOrleans(siloBuilder =>
@@ -126,8 +125,12 @@ namespace ShoppingCart
                 .ConfigureServices(services =>
                 {
                     services.AddControllers().AddNewtonsoftJson();
+                    
                 })
             .Build()
             .StartAsync();
+
+        public static HttpClient HttpClient = new HttpClient();
+      
     }
 }

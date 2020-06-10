@@ -44,7 +44,6 @@ namespace API.Controllers
         [HttpPost("add/{id}/{number}")]
         public void AddAvailability(Guid id, int number)
         {
-            //Call grain, add number
             var stock = _client.GetGrain<IStockGrain>(id);
             stock.ChangeAmount(number);
         }
@@ -53,7 +52,7 @@ namespace API.Controllers
         public Task<Stock> AddItem(decimal price)
         {
             var item = _client.GetGrain<IStockGrain>(Guid.NewGuid());
-            return item.Create(price); //Again, not the most elegant way to convert the object.
+            return item.Create(price);
         }
 
     }
