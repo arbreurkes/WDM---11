@@ -20,15 +20,15 @@ namespace API.Controllers
         }
 
         [HttpPost("pay/{user_id}/{order_id}/{amount}")]
-        public async Task<bool> Pay(Guid user_id, Guid order_id,decimal amount)
+        public async Task Pay(Guid user_id, Guid order_id,decimal amount)
         {
             var user = _client.GetGrain<IUserGrain>(user_id);
             var order = _client.GetGrain<IOrderGrain>(order_id);
-            var total = await order.GetTotalCost();
             //What to do with amount?
-            if (await user.ChangeCredit(-total)) return await order.Complete();
+            await user.ChangeCredit(-amount);
+            await order.Complete();
 
-            return false;
+         
         }
 
         [HttpPost("cancel/{user_id}/{order_id}")]
@@ -41,7 +41,8 @@ namespace API.Controllers
 
             if (await order.CancelComplete())
             {
-                return await user.ChangeCredit(total);
+                await user.ChangeCredit(total); //weird.
+                return true;
             }
 
             return false;

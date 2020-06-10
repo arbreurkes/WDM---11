@@ -5,16 +5,20 @@ using Infrastructure.Interfaces;
 using Orleans;
 using Orleans.Runtime;
 using System.Collections.Generic;
+using Orleans.Transactions;
+using Orleans.Transactions.Abstractions;
 
 namespace Grains
 {
     public class OrderGrain : Grain, IOrderGrain
     {
         private readonly IPersistentState<Order> _order;
-
-        public OrderGrain([PersistentState("order", "orderStore")] IPersistentState<Order> order)
+        private readonly IClusterClient _client;
+        private readonly ITransactionalState<Order> _torder;
+        public OrderGrain([PersistentState("order", "orderStore")] IPersistentState<Order> order, IClusterClient client)
         {
             _order = order;
+            _client = client;
         }
 
         /// <summary>
@@ -81,7 +85,7 @@ namespace Grains
                 _order.State.Items.Add(id, oi);
             }
 
-            // _order.WriteStateAsync();
+           
             return Task.FromResult(true);
         }
 
@@ -114,7 +118,7 @@ namespace Grains
                 _order.State.RemoveItem(id);
             }
 
-            // _order.WriteStateAsync();
+           
             return Task.FromResult(true);
         }
 
@@ -125,7 +129,6 @@ namespace Grains
                 throw new OrderDoesNotExistsException();
             }
 
-            _order.WriteStateAsync();
 
             return Task.FromResult(_order.State.Total);
         }
@@ -139,19 +142,33 @@ namespace Grains
 
             return Task.FromResult(new Payment { ID = this.GetPrimaryKey(), Paid = _order.State.Completed });
         }
-
+        [Transaction(TransactionOption.CreateOrJoin)]
         public Task<bool> Checkout()
         {
-            // foreach (Stock item in order.Items)
-            // {
-            //     //ToDo: subtract stock.
-            // }
-            return Task.FromResult(_order.State.Checkout());
+            var user_id = _order.State.UserId;
+            var total = _order.State.Total;
+            _client.GetGrain<IUserGrain>(user_id).ChangeCredit(-total);
+           
+            foreach (var items in _order.State.Items)
+            {
+                    var id = items.Key;
+                    var qtd = items.Value.Quantity;
+                    _client.GetGrain<IStockGrain>(id).ChangeAmount(-qtd);
+            }
+            var result =  _torder.PerformUpdate(i => i.Checkout());
+
+            _order.WriteStateAsync();
+            this.DeactivateOnIdle();
+            
+            return result;
         }
 
         //Complete === Checkout && Paid
         public Task<bool> Complete()
         {
+            _order.WriteStateAsync();
+            this.DeactivateOnIdle();
+
             return Task.FromResult(_order.State.Complete());
         }
 

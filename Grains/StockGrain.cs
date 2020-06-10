@@ -20,7 +20,7 @@ namespace Grains
         }
 
         [Transaction(TransactionOption.CreateOrJoin)]
-        public Task<bool> ChangeAmount(int amount)
+        public async Task ChangeAmount(int amount)
         {
             if (!_stock.State.Exists)
             {
@@ -30,12 +30,11 @@ namespace Grains
             if (_stock.State.Quantity + amount < 0 )
             {
                 throw new InvalidQuantityException();
-                //If stock == 0, remove from database? 
             }
 
             _stock.State.Quantity += amount;
-            //_stock.WriteStateAsync();
-            return Task.FromResult(true);
+            await _tstock.PerformUpdate(i => i.Quantity += amount);
+            
         }
 
         public Task<Stock> GetStock()

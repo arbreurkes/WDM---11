@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Net;
 
 namespace DataModels
 {
@@ -16,16 +17,21 @@ namespace DataModels
         [JsonIgnore]
         public bool Exists => CreatedAt != null;
         
-        public Boolean Create(Guid id)
+        public void Create(Guid id)
         {
-            if (!Exists)
-            {
-                ID = id;
-                CreatedAt = DateTime.Now;
-                return true;
-            }
+          
+           
+            ID = id;
+            CreatedAt = DateTime.Now;
+               
+           
+        }
 
-            return false;
+        public void Reset()
+        {
+            CreatedAt = null;
+            Credit = 0;
+            
         }
     }
 }

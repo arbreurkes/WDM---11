@@ -9,13 +9,13 @@ namespace Infrastructure.Interfaces
     {
         Task<User> CreateUser();
 
-        Task<bool> RemoveUser();
+        Task RemoveUser();
 
         Task<User> GetUser();
 
         Task<decimal> GetCredit();
 
-        Task<bool> ChangeCredit(decimal amount);
+        Task ChangeCredit(decimal amount);
 
 
     }

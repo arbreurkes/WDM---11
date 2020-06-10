@@ -26,7 +26,7 @@ namespace Grains
             return Task.FromResult(_user.State);
         }
 
-        public Task<bool> RemoveUser()
+        public async Task RemoveUser()
         {
 
             if (!_user.State.Exists)
@@ -35,8 +35,9 @@ namespace Grains
             }
 
             //Remove user from database.
-            _user.ClearStateAsync();
-            return Task.FromResult(true);
+           await _user.ClearStateAsync();
+           await _tuser.PerformUpdate(i => i.Reset());
+            
         }
 
         public Task<User> GetUser()
@@ -46,7 +47,7 @@ namespace Grains
                 throw new UserDoesNotExistsException();
             }
 
-            return Task.FromResult(_user.State);
+            return _tuser.PerformRead(i => i);
         }
 
         public Task<decimal> GetCredit()
@@ -56,10 +57,11 @@ namespace Grains
                 throw new UserDoesNotExistsException();
             }
 
-            return Task.FromResult(_user.State.Credit);
+            return _tuser.PerformRead(i=>i.Credit);
         }
 
-        public Task<bool> ChangeCredit(decimal amount)
+        [Transaction(TransactionOption.CreateOrJoin)]
+        public async Task ChangeCredit(decimal amount)
         {
             if (!_user.State.Exists)
             {
@@ -71,9 +73,7 @@ namespace Grains
                 throw new NotEnoughCreditException();
             }
                 
-            _user.State.Credit += amount;
-            _user.WriteStateAsync();
-            return Task.FromResult(true);
+            await _tuser.PerformUpdate(i => i.Credit += amount);
         }
     }
 }
