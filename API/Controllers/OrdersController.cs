@@ -28,11 +28,11 @@ namespace API.Controllers
         }
     
         [HttpDelete("remove/{id}")]
-        public async Task<bool> RemoveOrder(Guid id)
+        public async Task RemoveOrder(Guid id)
         {
-            //Delete order -> Remove order from user // For now user doesn't have orders
+            
             var order = _client.GetGrain<IOrderGrain>(id);
-            return await order.RemoveOrder();
+            await order.RemoveOrder();
         }
 
         [HttpGet("find/{id}")]

@@ -12,13 +12,12 @@ namespace Grains
 {
     public class OrderGrain : Grain, IOrderGrain
     {
-        private readonly IPersistentState<Order> _order;
         private readonly IClusterClient _client;
         private readonly ITransactionalState<Order> _torder;
-        public OrderGrain([PersistentState("order", "orderStore")] IPersistentState<Order> order, IClusterClient client)
+        public OrderGrain( IClusterClient client,[TransactionalState("torder", "transactionStore")]ITransactionalState<Order> torder)
         {
-            _order = order;
             _client = client;
+            _torder = torder;
         }
 
         /// <summary>
@@ -26,43 +25,45 @@ namespace Grains
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public Task<Order> CreateOrder(Guid userId)
+        public async Task<Order> CreateOrder(Guid userId)
         {
-            _order.State.Create(userId, this.GetPrimaryKey());
-            //_order.WriteStateAsync();
-            return Task.FromResult(_order.State);
+
+            await _client.GetGrain<IUserGrain>(userId).GetUser();
+           
+
+            await _torder.PerformUpdate(i => i.Create(userId, this.GetPrimaryKey()));
+            return await _torder.PerformRead(i => i);
         }
 
-        public Task<bool> RemoveOrder()
+        public async Task RemoveOrder()
         {
-            if (!_order.State.Exists)
+            if (!(await _torder.PerformRead(i=> i.Exists)))
             {
                 throw new OrderDoesNotExistsException();
             }
              
-            _order.State = new Order(); // resets timestamp
-            // _order.ClearStateAsync();
-            this.DeactivateOnIdle(); //Deactive the grain.
-            return Task.FromResult(true);
+           
+            this.DeactivateOnIdle();
+            await _torder.PerformUpdate(i => i.Reset());
         }
 
         /// <summary>
         /// If the grain can be found in the memory, this method returns it
         /// </summary>
         /// <returns></returns>
-        public Task<Order> GetOrder()
+        public async Task<Order> GetOrder()
         {
-            if (!_order.State.Exists)
+            if (!(await _torder.PerformRead(i=> i.Exists)))
             { 
                 throw new OrderDoesNotExistsException();
             }
 
-            return Task.FromResult(_order.State);
+            return await _torder.PerformRead(i => i);
         }
 
-        public Task<bool> AddItem(Stock item)
+        public async Task AddItem(Stock item)
         {
-            if (!_order.State.Exists)
+            if (!(await _torder.PerformRead(i => i.Exists)))
             {
                 throw new OrderDoesNotExistsException();
             }
@@ -73,25 +74,25 @@ namespace Grains
             }
 
             Guid id = item.ID;
-
-            if (_order.State.Items.ContainsKey(id))
+           
+            if (await _torder.PerformRead(i => i.Items.ContainsKey(id)))
             {
-                _order.State.IncQuantity(id);
+                await _torder.PerformUpdate(i => i.IncQuantity(id));
             }
 
             else
             {
                 OrderItem oi = new OrderItem() { Item = item, Quantity = 1 };
-                _order.State.Items.Add(id, oi);
+                await _torder.PerformUpdate( i=> i.Items.Add(id, oi));
             }
 
            
-            return Task.FromResult(true);
+         
         }
 
-        public Task<bool> RemoveItem(Stock item)
+        public async Task RemoveItem(Stock item)
         {
-            if (!_order.State.Exists)
+            if (!(await _torder.PerformRead(i => i.Exists)))
             {
                 throw new OrderDoesNotExistsException();
             }
@@ -101,110 +102,113 @@ namespace Grains
                 throw new ItemDoesNotExistException();
             }
 
+
             Guid id = item.ID;
 
-            if (!_order.State.Items.ContainsKey(id))
-            {
+            if (await _torder.PerformRead(i => i.Items.ContainsKey(id))) 
+            { 
+
                 throw new ItemNotInOrderException();
             }
 
             try
             {
-                _order.State.DecQuantity(id);
+                await _torder.PerformUpdate(i => i.DecQuantity(id));
             }
 
             catch (InvalidQuantityException)
             {
-                _order.State.RemoveItem(id);
+                await _torder.PerformUpdate(i => i.RemoveItem(id));
             }
 
            
-            return Task.FromResult(true);
+          
         }
 
-        public Task<decimal> GetTotalCost()
+        public async Task<decimal> GetTotalCost()
         {
-            if (!_order.State.Exists)
+            if (!(await _torder.PerformRead(i => i.Exists)))
             {
                 throw new OrderDoesNotExistsException();
             }
 
 
-            return Task.FromResult(_order.State.Total);
+            return await _torder.PerformRead(i => i.Total);
         }
 
-        public Task<Payment> GetStatus()
+        public async Task<Payment> GetStatus()
         {
-            if (!_order.State.Exists)
+            if(!(await _torder.PerformRead(i => i.Exists)))
             {
                 throw new OrderDoesNotExistsException();
             }
 
-            return Task.FromResult(new Payment { ID = this.GetPrimaryKey(), Paid = _order.State.Completed });
+
+            return new Payment { ID = this.GetPrimaryKey(), Paid = await _torder.PerformRead(i=>i.Completed) };
         }
-        [Transaction(TransactionOption.CreateOrJoin)]
-        public Task<bool> Checkout()
+        public async Task<bool> Checkout()
         {
-            var user_id = _order.State.UserId;
-            var total = _order.State.Total;
-            _client.GetGrain<IUserGrain>(user_id).ChangeCredit(-total);
-           
-            foreach (var items in _order.State.Items)
+            var user_id = await _torder.PerformRead(i => i.UserId); 
+            var total = await _torder.PerformRead(i => i.Total);
+            await _client.GetGrain<IUserGrain>(user_id).ChangeCredit(-total);
+
+            var items = await _torder.PerformRead(i => i.Items);
+            foreach (var item in items)
             {
-                    var id = items.Key;
-                    var qtd = items.Value.Quantity;
-                    _client.GetGrain<IStockGrain>(id).ChangeAmount(-qtd);
+                    var id = item.Key;
+                    var qtd = item.Value.Quantity;
+                    await _client.GetGrain<IStockGrain>(id).ChangeAmount(-qtd);
             }
             var result =  _torder.PerformUpdate(i => i.Checkout());
 
-            _order.WriteStateAsync();
-            this.DeactivateOnIdle();
             
-            return result;
+            this.DeactivateOnIdle();
+
+            return await result;
         }
 
         //Complete === Checkout && Paid
         public Task<bool> Complete()
         {
-            _order.WriteStateAsync();
+           
             this.DeactivateOnIdle();
 
-            return Task.FromResult(_order.State.Complete());
+            return _torder.PerformUpdate(i =>i.Complete());
         }
 
-        public Task<bool> CancelCheckout()
+        public async Task<bool> CancelCheckout()
         {
-            if (!_order.State.CancelCheckout())
+            if (!(await _torder.PerformRead(i => i.Exists)))
             {
                 throw new OrderDoesNotExistsException();
             }
-            return Task.FromResult(true);
+
+            //What should this do
+
+            return true;
         }
 
-        public Task<Guid> GetUser()
+        public async Task<Guid> GetUser()
         {
-            if (_order.State.Exists)
+            if (!(await _torder.PerformRead(i => i.Exists)))
             {
-                return Task.FromResult(this.GetPrimaryKey());
+                throw new OrderDoesNotExistsException();
             }
 
-            throw new OrderDoesNotExistsException();
+
+            return await _torder.PerformRead(i => i.UserId);
         }
 
-        public Task<List<OrderItem>> GetItems()
+        public async Task<List<OrderItem>> GetItems()
         {
-            return Task.FromResult(new List<OrderItem>(_order.State.Items.Values));
+            return new List<OrderItem>(await _torder.PerformRead(i =>i.Items.Values));
         }
 
         public Task<bool> CancelComplete()
         {
-            return Task.FromResult(_order.State.CancelComplete());
+            return _torder.PerformRead(i =>i.CancelComplete());
         }
 
-        public Task<bool> ClearOrder()
-        {
-            _order.ClearStateAsync();
-            return Task.FromResult(true);
-        }
+        
     }
 }

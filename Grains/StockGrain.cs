@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using DataModels;
 using Infrastructure.Interfaces;
 using Orleans;
@@ -10,59 +11,60 @@ namespace Grains
 {
     public class StockGrain : Grain, IStockGrain
     {
-        private readonly IPersistentState<Stock> _stock;
         private readonly ITransactionalState<Stock> _tstock;
 
-        public StockGrain([PersistentState("stock", "stockStore")] IPersistentState<Stock> stock,[TransactionalState("tstock", "transactionStore")] ITransactionalState<Stock> tstock)
+        public StockGrain([TransactionalState("tstock", "transactionStore")] ITransactionalState<Stock> tstock)
         {
-            _stock = stock;
             _tstock = tstock;
         }
 
-        [Transaction(TransactionOption.CreateOrJoin)]
         public async Task ChangeAmount(int amount)
         {
-            if (!_stock.State.Exists)
+            var exists = await _tstock.PerformRead(i => i.Exists);
+            if (!exists)
             {
                 throw new StockDoesNotExistsException();
             }
 
-            if (_stock.State.Quantity + amount < 0 )
+            var quantity = await _tstock.PerformRead(i => i.Quantity);
+            if (quantity + amount < 0 )
             {
                 throw new InvalidQuantityException();
             }
 
-            _stock.State.Quantity += amount;
             await _tstock.PerformUpdate(i => i.Quantity += amount);
             
         }
 
-        public Task<Stock> GetStock()
+        public async Task<Stock> GetStock()
         {
-            if (!_stock.State.Exists)
+            var exists = await _tstock.PerformRead(i => i.Exists);
+
+            if (!exists)
             {
                 throw new StockDoesNotExistsException();
             }
 
-            return Task.FromResult(_stock.State);
+            return await _tstock.PerformRead(i => i);
         }
 
-        public Task<int> GetAmount()
+        public async Task<int> GetAmount()
         {
-            if (!_stock.State.Exists)
+            var exists = await _tstock.PerformRead(i => i.Exists);
+
+            if (!exists)
             {
                 throw new StockDoesNotExistsException();
             }
 
-            return Task.FromResult(_stock.State.Quantity);
+            return await _tstock.PerformRead(i => i.Quantity);
         }
 
         public Task<Stock> Create(decimal price)
         {
-            //What if the item already exists ? Are updates allowed ?
-            _stock.State.Price = price;
-            _stock.State.ID = this.GetPrimaryKey();
-            return Task.FromResult(_stock.State);
+            
+            _tstock.PerformUpdate(i => i.Create(this.GetPrimaryKey(), price));
+            return _tstock.PerformRead(i => i);
         }
     }
 }

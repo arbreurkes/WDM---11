@@ -38,6 +38,14 @@ namespace DataModels
         public bool Completed => CompletedAt != null;
         [JsonIgnore]
         public bool CanCheckout => Exists && !CheckedOut && !Completed;
+
+        public void Reset()
+        {
+            CreatedAt = CheckedOutAt = CompletedAt = null;
+            this.UserId = this.ID = Guid.Empty;
+            this.Items.Clear();
+        }
+
         [JsonIgnore]
         public bool CanComplete => Exists && CheckedOut && !Completed;
 

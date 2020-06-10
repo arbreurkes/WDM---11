@@ -14,5 +14,11 @@ namespace DataModels
 
         [JsonIgnore]
         public bool Exists => Price >= 0;
+
+        public void Create(Guid guid, decimal price)
+        {
+            ID = guid;
+            this.Price = price;
+        }
     }
 }

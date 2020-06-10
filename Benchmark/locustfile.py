@@ -29,8 +29,17 @@ def find_stock(self, item_idx: int):
         response.success()
 
 
-def add_stock(self, item_idx: int):
-    stock_to_add = random.randint(100, 1000)
+def get_stock_qtd(self):
+    qtds = []
+    for i in range(len(self.items)):
+        qtds.append(find_stock(i)["stock"])
+    return qtds
+
+
+def add_stock(self, item_idx: int,quantity):
+    if(quantity is None):
+        quantity = random.randint(100, 1000)
+    stock_to_add = quantity
     self.client.post(f"{STOCK_URL}/stock/add/{self.item_ids[item_idx]}/{stock_to_add}",
                      name="/stock/add/[item_id]/[number]")
 
@@ -47,6 +56,11 @@ def make_items_stock_zero(self, item_idx: int):
     self.client.post(f"{STOCK_URL}/stock/subtract/{self.item_ids[item_idx]}/{stock_to_subtract}",
                      name="/stock/subtract/[item_id]/[number]")
 
+def stock_consistency(self,stocks):
+    qtds = get_stock_qtd(self)
+    for i in range(len(qtds)):
+        if(stocks[i] != qtds[i]):
+            raise Exception
 
 # USER
 def create_user(self):
@@ -85,6 +99,11 @@ def add_balance_to_user(self):
     self.client.post(f"{USER_URL}/users/credit/add/{self.user_id}/{balance_to_add}",
                      name="/users/credit/add/[user_id]/[amount]")
 
+
+def credits_consistency(self,credits):
+    res = get_credits(self)
+    #Check if old == new => success
+    
 
 # ORDER
 def create_order(self):
@@ -145,6 +164,10 @@ def checkout_order_that_is_supposed_to_fail(self, reason: int):
             response.failure("This was supposed to fail: Not enough stock")
         else:
             response.failure("This was supposed to fail: Not enough credit")
+
+
+
+
 
 
 # Payment
@@ -519,7 +542,56 @@ class LoadTest7(TaskSequence):
     @seq_task(13)
     def user_checkouts(self): checkout_check_credits(self)
         
+  
+class LoadTest8(TaskSequence):
+    
+    """
+    Scenario where a user checkouts an order that is partially out of stock.
+    """
+    def on_start(self):
+        self.item_ids = list()
+        self.user_id = -1
+        self.order_id = -1
+        self.balance = 0
+
+    def on_stop(self):
+        self.item_ids = list()
+        self.user_id = -1
+        self.order_id = -1
         
+    @seq_task(1)
+    def admin_creates_item1(self): 
+        create_item(self)
+        add_stock(self,0)
+        
+    @seq_task(2)
+    def admin_creates_item2(self): 
+        create_item(self)
+        add_stock(self,1)
+
+    @seq_task(3)
+    def admin_creates_item3(self): 
+        create_item(self)
+    @seq_task(4)
+    def user_creates_account(self): create_user(self)
+
+    @seq_task(5)
+    def user_creates_order(self): create_order(self)
+
+    @seq_task(6)
+    def user_adds_balance(self): 
+        add_balance_to_user(self)
+    @seq_task(7)
+    def add_items_to_order(self):
+        pass
+    @seq_task(8)
+    def fail_checkout(self):
+        credits = get_credits(self)
+        stocks = get_stock_qtd(self)
+        checkout_order(self)
+        credits_consistency(self,credits)
+        stock_consistency(self,stocks)
+
 
 class LoadTests(TaskSet):
     # [TaskSequence]: [weight of the TaskSequence]

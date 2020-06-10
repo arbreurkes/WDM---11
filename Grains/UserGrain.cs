@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using DataModels;
 using Infrastructure.Interfaces;
 using Orleans;
@@ -8,72 +9,75 @@ using Orleans.Transactions.Abstractions;
 
 namespace Grains
 {
+    
     public class UserGrain : Grain, IUserGrain
     {
-        private readonly IPersistentState<User> _user;
         private readonly ITransactionalState<User> _tuser;
 
-        public UserGrain([PersistentState("user", "userStore")] IPersistentState<User> user, [TransactionalState("tuser", "transactionStore")]  ITransactionalState<User> tuser)
+        public UserGrain([TransactionalState("tuser", "transactionStore")]  ITransactionalState<User> tuser)
         {
-            _user = user;
+        
             _tuser = tuser;
         }
 
-        public Task<User> CreateUser()
+        public async Task<User> CreateUser()
         {
-            _user.State.Create(this.GetPrimaryKey());
-            _user.WriteStateAsync();
-            return Task.FromResult(_user.State);
+            await _tuser.PerformUpdate(i => i.Create(this.GetPrimaryKey()));
+
+            return await _tuser.PerformRead(i => i);
         }
 
         public async Task RemoveUser()
         {
-
-            if (!_user.State.Exists)
+            if (!(await _tuser.PerformRead(i => i.Exists)))
             {
                 throw new UserDoesNotExistsException();
             }
 
-            //Remove user from database.
-           await _user.ClearStateAsync();
+    
            await _tuser.PerformUpdate(i => i.Reset());
             
         }
 
-        public Task<User> GetUser()
+        public async Task<User> GetUser()
         {
-            if (!_user.State.Exists)
+            if (!(await _tuser.PerformRead(i => i.Exists)))
             {
                 throw new UserDoesNotExistsException();
             }
 
-            return _tuser.PerformRead(i => i);
+            return await _tuser.PerformRead(i => i);
         }
 
-        public Task<decimal> GetCredit()
+        public async Task<decimal> GetCredit()
         {
-            if (!_user.State.Exists)
+            if (!(await _tuser.PerformRead(i => i.Exists)))
             {
                 throw new UserDoesNotExistsException();
             }
 
-            return _tuser.PerformRead(i=>i.Credit);
+            return await _tuser.PerformRead(i=>i.Credit);
         }
 
-        [Transaction(TransactionOption.CreateOrJoin)]
         public async Task ChangeCredit(decimal amount)
         {
-            if (!_user.State.Exists)
+            if (!(await _tuser.PerformRead(i => i.Exists)))
             {
                 throw new UserDoesNotExistsException();
             }
 
-            if (_user.State.Credit + amount < decimal.Zero)
+
+            var credit = await _tuser.PerformRead(i => i.Credit);
+            if (credit + amount < decimal.Zero)
             {
                 throw new NotEnoughCreditException();
             }
-                
+
+           
+           
             await _tuser.PerformUpdate(i => i.Credit += amount);
+            
+            
         }
     }
 }

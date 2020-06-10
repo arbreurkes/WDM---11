@@ -23,7 +23,9 @@ namespace API.Controllers
         {
             var id = Guid.NewGuid();
             var user = _client.GetGrain<IUserGrain>(id);
-            return await user.CreateUser(); 
+
+            var new_user = await user.CreateUser();
+            return new_user;
         }
 
         [HttpDelete("remove/{user_id}")]
