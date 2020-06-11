@@ -36,10 +36,8 @@ def get_stock_qtd(self):
     return qtds
 
 
-def add_stock(self, item_idx: int,quantity):
-    if(quantity is None):
-        quantity = random.randint(100, 1000)
-    stock_to_add = quantity
+def add_stock(self, item_idx: int):
+    stock_to_add = random.randint(100,1000)
     self.client.post(f"{STOCK_URL}/stock/add/{self.item_ids[item_idx]}/{stock_to_add}",
                      name="/stock/add/[item_id]/[number]")
 
@@ -101,8 +99,13 @@ def add_balance_to_user(self):
 
 
 def credits_consistency(self,credits):
-    res = get_credits(self)
-    #Check if old == new => success
+    response = self.client.get(f"{USER_URL}/users/find/{self.user_id}",
+                                        name="/users/find/[user_id]").json()
+    _creds = response["credits"]
+    if(credits != creds):
+        response.failure("Inconsistent credits")    
+    else:
+        response.success()
     
 
 # ORDER
@@ -185,7 +188,7 @@ def cancel_payment(self):
     if(response == True):
         response.failure("Payment was not properly canceled")
     else:
-        responce.success()
+        response.success()
 
 def get_credits(self):
     
@@ -208,7 +211,7 @@ def checkout_check_credits(self):
     new_credits = get_credits(self)
      
     if(total-credits == new_credits):
-       responce.success()
+       response.success()
     else:
        response.failure("Inconsistent credits after checkout")
         
@@ -518,12 +521,12 @@ class LoadTest7(TaskSequence):
     @seq_task(8)
     def user_adds_item_to_order(self): 
         for i in range(20):
-            add_item_to_order(self, randrange(4))
+            add_item_to_order(self, random.randrange(4))
             
     @seq_task(9)
     def user_adds_more_item_to_order(self): 
         for i in range(15):
-            add_item_to_order(self, randrange(4))
+            add_item_to_order(self, random.randrange(4))
             
 
 
@@ -583,12 +586,14 @@ class LoadTest8(TaskSequence):
         add_balance_to_user(self)
     @seq_task(7)
     def add_items_to_order(self):
-        pass
+        add_item_to_order(self, 0)
+        add_item_to_order(self, 1)
+        add_item_to_order(self, 2)
     @seq_task(8)
     def fail_checkout(self):
         credits = get_credits(self)
         stocks = get_stock_qtd(self)
-        checkout_order(self)
+        checkout_order_that_is_supposed_to_fail(self,1)
         credits_consistency(self,credits)
         stock_consistency(self,stocks)
 
@@ -596,16 +601,17 @@ class LoadTest8(TaskSequence):
 class LoadTests(TaskSet):
     # [TaskSequence]: [weight of the TaskSequence]
     tasks = {
-        LoadTest1: 5,
-        LoadTest2: 25,
-        LoadTest3: 20,
-        LoadTest4: 20,
+        LoadTest1: 40,
+        LoadTest2: 0,
+        LoadTest3: 0,
+        LoadTest4: 0,
         LoadTest5: 10,
         LoadTest6: 10,
-        LoadTest7: 10
+        LoadTest7: 20,
+        LoadTest8: 20
     }
 
 
 class MicroservicesUser(HttpLocust):
     task_set = LoadTests
-    wait_time = between(1, 10)  # how much time a user waits (seconds) to run another TaskSequence
+    wait_time = between(2, 8)  # how much time a user waits (seconds) to run another TaskSequence

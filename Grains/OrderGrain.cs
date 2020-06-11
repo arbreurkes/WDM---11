@@ -32,7 +32,8 @@ namespace Grains
            
 
             await _torder.PerformUpdate(i => i.Create(userId, this.GetPrimaryKey()));
-            return await _torder.PerformRead(i => i);
+            var _order = await _torder.PerformRead(i => i);
+            return _order;
         }
 
         public async Task RemoveOrder()
@@ -86,8 +87,9 @@ namespace Grains
                 await _torder.PerformUpdate( i=> i.Items.Add(id, oi));
             }
 
-           
-         
+
+
+            var order = await _torder.PerformRead(i => i);
         }
 
         public async Task RemoveItem(Stock item)
@@ -105,21 +107,16 @@ namespace Grains
 
             Guid id = item.ID;
 
-            if (await _torder.PerformRead(i => i.Items.ContainsKey(id))) 
+            if (!(await _torder.PerformRead(i => i.Items.ContainsKey(id)))) 
             { 
 
                 throw new ItemNotInOrderException();
             }
 
-            try
-            {
-                await _torder.PerformUpdate(i => i.DecQuantity(id));
-            }
+            await _torder.PerformUpdate(i => i.DecQuantity(id));
+            
 
-            catch (InvalidQuantityException)
-            {
-                await _torder.PerformUpdate(i => i.RemoveItem(id));
-            }
+           
 
            
           

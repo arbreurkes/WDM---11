@@ -33,7 +33,7 @@ namespace ShoppingCart
                             {
                                 errorApp.Run(async context =>
                                 {
-                                    context.Response.StatusCode = 500; // or 404 ? 
+                                    context.Response.StatusCode = 404; // or 404 ? 
                                     context.Response.ContentType = "application/json";
                                     await context.Response.WriteAsync("Forbidden");
                                     await context.Response.CompleteAsync();

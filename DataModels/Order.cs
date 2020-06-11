@@ -108,7 +108,14 @@ namespace DataModels
 
         public void DecQuantity(Guid id)
         {
-            Items[id].DecQuantity();
+            try
+            {
+                Items[id].DecQuantity();
+            }
+            catch (InvalidQuantityException)
+            {
+                Items.Remove(id);
+            }
         }
 
         public void RemoveItem(Guid id)
