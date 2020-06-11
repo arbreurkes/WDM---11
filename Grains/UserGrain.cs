@@ -11,12 +11,11 @@ namespace Grains
     public class UserGrain : Grain, IUserGrain
     {
         private readonly IPersistentState<User> _user;
-        private readonly ITransactionalState<User> _tuser;
 
-        public UserGrain([PersistentState("user", "userStore")] IPersistentState<User> user, [TransactionalState("tuser", "transactionStore")]  ITransactionalState<User> tuser)
+        public UserGrain([PersistentState("user", "userStore")] IPersistentState<User> user)
         {
             _user = user;
-            _tuser = tuser;
+          
         }
 
         public Task<User> CreateUser()

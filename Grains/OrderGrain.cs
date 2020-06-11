@@ -25,7 +25,7 @@ namespace Grains
         public Task<Order> CreateOrder(Guid userId)
         {
             _order.State.Create(userId, this.GetPrimaryKey());
-            //_order.WriteStateAsync();
+            _order.WriteStateAsync();
             return Task.FromResult(_order.State);
         }
 
@@ -37,7 +37,7 @@ namespace Grains
             }
              
             _order.State = new Order(); // resets timestamp
-            // _order.ClearStateAsync();
+            _order.ClearStateAsync();
             this.DeactivateOnIdle(); //Deactive the grain.
             return Task.FromResult(true);
         }

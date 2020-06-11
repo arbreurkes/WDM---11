@@ -192,9 +192,9 @@ def cancel_payment(self):
 
 def get_credits(self):
     
-    credits = self.client.get(f"{USER_URL}/users/find/{self.user_id}",
-                                        name="/users/find/[user_id]").json()['credits']
-    return credits    
+    creds = self.client.get(f"{USER_URL}/users/find/{self.user_id}",
+                                        name="/users/find/[user_id]", catch_response=True).json()['credits']
+    return creds    
 
 
 def get_order_cost(self):
@@ -205,12 +205,12 @@ def get_order_cost(self):
     
 def checkout_check_credits(self):
     total = get_order_cost(self)
-    credits = get_credits(self)
+    creds = get_credits(self)
     response = self.client.post(f"{ORDER_URL}/orders/checkout/{self.order_id}", name="/orders/checkout/[order_id]",
                                 catch_response=True)
     new_credits = get_credits(self)
      
-    if(total-credits == new_credits):
+    if(total-creds == new_credits):
        response.success()
     else:
        response.failure("Inconsistent credits after checkout")
@@ -220,7 +220,7 @@ def checkout_check_credits(self):
 
 
 def payment_status(self):
-    response = self.client.get(f"{PAYMENT_URL}/payment/status/{self.order_id}",name="/status/[order_id]").json()
+    response = self.client.get(f"{PAYMENT_URL}/payment/status/{self.order_id}",name="/status/[order_id]", catch_response=True).json()
     if 400 <= response.status_code < 600:
         response.failure(response.text)
     else:
@@ -591,24 +591,24 @@ class LoadTest8(TaskSequence):
         add_item_to_order(self, 2)
     @seq_task(8)
     def fail_checkout(self):
-        credits = get_credits(self)
+        creds = get_credits(self)
         stocks = get_stock_qtd(self)
-        checkout_order_that_is_supposed_to_fail(self,1)
-        credits_consistency(self,credits)
+        checkout_order_that_is_supposed_to_fail(self,0)
+        credits_consistency(self,creds)
         stock_consistency(self,stocks)
 
 
 class LoadTests(TaskSet):
     # [TaskSequence]: [weight of the TaskSequence]
     tasks = {
-        LoadTest1: 40,
+        LoadTest1: 5,
         LoadTest2: 0,
         LoadTest3: 0,
         LoadTest4: 0,
-        LoadTest5: 10,
+        LoadTest5: 5,
         LoadTest6: 10,
-        LoadTest7: 20,
-        LoadTest8: 20
+        LoadTest7: 40,
+        LoadTest8: 40
     }
 
 
