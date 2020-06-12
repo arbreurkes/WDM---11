@@ -3,6 +3,7 @@ using Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Orleans;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace API.Controllers
@@ -85,20 +86,28 @@ namespace API.Controllers
                 }
 
                 var items = await order.GetItems();
-               
-                //Change to transaction thing, bit easier perhaps.
-                foreach(var orderItem in items)
+                var success = new List<OrderItem>();
+                try
                 {
-                    decimal cost = orderItem.Total;
-                    try
+                    foreach (var orderItem in items)
                     {
-                        await _client.GetGrain<IStockGrain>(orderItem.Item.ID).ChangeAmount(-orderItem.Quantity);
-                        total_cost -= cost;
+
+                        var stock_grain = _client.GetGrain<IStockGrain>(orderItem.Item.ID);
+                        await stock_grain.ChangeAmount(-orderItem.Quantity);
+                        success.Add(orderItem);
+
+
                     }
-                    catch(InvalidQuantityException)
+                }
+                catch (InvalidQuantityException)
+                {
+                    foreach(var orderItem in success)
                     {
-                       await user_grain.ChangeCredit(cost);
+                        var stock_grain = _client.GetGrain<IStockGrain>(orderItem.Item.ID);
+                        await stock_grain.ChangeAmount(orderItem.Quantity);
                     }
+                    await order.CancelCheckout();
+                    await user_grain.ChangeCredit(total_cost);
                 }
             }
 
