@@ -650,14 +650,14 @@ class LoadTests(TaskSet):
     # [TaskSequence]: [weight of the TaskSequence]
     tasks = {
         LoadTest1: 5,
-        LoadTest2: 0,
-        LoadTest3: 0,
-        LoadTest4: 0,
-        LoadTest5: 5,
+        LoadTest2: 5,
+        LoadTest3: 5,
+        LoadTest4: 5,
+        LoadTest5: 10,
         LoadTest6: 10,
-        LoadTest7: 35,
-        LoadTest8: 35,
-        LoadTest9: 10
+        LoadTest7: 25,
+        LoadTest8: 30,
+        LoadTest9: 5
     }
 
 
