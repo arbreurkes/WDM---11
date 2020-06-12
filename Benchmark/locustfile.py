@@ -34,9 +34,8 @@ def get_stock_qtd(self):
     return qtds
 
 
-def add_stock(self, item_idx: int):
-    stock_to_add = random.randint(100, 1000)
-    self.client.post(f"{STOCK_URL}/stock/add/{self.item_ids[item_idx]}/{stock_to_add}",
+def add_stock(self, item_idx: int, amount=random.randint(100, 1000)):
+    self.client.post(f"{STOCK_URL}/stock/add/{self.item_ids[item_idx]}/{amount}",
                      name="/stock/add/[item_id]/[number]")
 
 
@@ -92,8 +91,8 @@ def subtract_balance_from_user(self, amount: int):
         response.success()
 
 
-def add_balance_to_user(self, amount=random.randint(10000, 100000)):
-    self.client.post(f"{USER_URL}/users/credit/add/{self.user_id}/{amount}",
+def add_balance_to_user(self, user_id, amount=random.randint(10000, 100000)):
+    self.client.post(f"{USER_URL}/users/credit/add/{user_id}/{amount}",
                      name="/users/credit/add/[user_id]/[amount]")
 
 
@@ -101,15 +100,15 @@ def credits_consistency(self, credits):
     response = self.client.get(f"{USER_URL}/users/find/{self.user_id}",
                                name="/users/find/[user_id]").json()
     _creds = response["credits"]
-    if (credits != creds):
+    if credits != _creds:
         response.failure("Inconsistent credits")
     else:
         response.success()
 
 
 # ORDER
-def create_order(self):
-    response = self.client.post(f"{ORDER_URL}/orders/create/{self.user_id}", name="/orders/create/[user_id]")
+def create_order(self, user_id):
+    response = self.client.post(f"{ORDER_URL}/orders/create/{user_id}", name="/orders/create/[user_id]")
     self.order_id = response.json()['order_id']
 
 
@@ -129,8 +128,8 @@ def find_order(self):
         response.success()
 
 
-def add_item_to_order(self, item_idx: int):
-    response = self.client.post(f"{ORDER_URL}/orders/addItem/{self.order_id}/{self.item_ids[item_idx]}",
+def add_item_to_order(self, order_id, item_idx: int):
+    response = self.client.post(f"{ORDER_URL}/orders/addItem/{order_id}/{self.item_ids[item_idx]}",
                                 name="/orders/addItem/[order_id]/[item_id]", catch_response=True)
     if 400 <= response.status_code < 600:
         response.failure(response.text)
@@ -147,8 +146,8 @@ def remove_item_from_order(self, item_idx: int):
         response.success()
 
 
-def checkout_order(self):
-    response = self.client.post(f"{ORDER_URL}/orders/checkout/{self.order_id}", name="/orders/checkout/[order_id]",
+def checkout_order(self, order_id):
+    response = self.client.post(f"{ORDER_URL}/orders/checkout/{order_id}", name="/orders/checkout/[order_id]",
                                 catch_response=True)
     if 400 <= response.status_code < 600:
         response.failure(response.text)
@@ -156,8 +155,8 @@ def checkout_order(self):
         response.success()
 
 
-def checkout_order_that_is_supposed_to_fail(self, reason: int):
-    response = self.client.post(f"{ORDER_URL}/orders/checkout/{self.order_id}", name="/orders/checkout/[order_id]",
+def checkout_order_that_is_supposed_to_fail(self, reason: int, order_id):
+    response = self.client.post(f"{ORDER_URL}/orders/checkout/{order_id}", name="/orders/checkout/[order_id]",
                                 catch_response=True)
     if 400 <= response.status_code < 500:
         response.success()
@@ -272,16 +271,16 @@ class LoadTest2(TaskSequence):
     def user_creates_account(self): create_user(self)
 
     @seq_task(4)
-    def user_adds_balance(self): add_balance_to_user(self)
+    def user_adds_balance(self): add_balance_to_user(self, self.user_id)
 
     @seq_task(5)
-    def user_creates_order(self): create_order(self)
+    def user_creates_order(self): create_order(self, self.user_id)
 
     @seq_task(6)
-    def user_adds_item_to_order(self): add_item_to_order(self, 0)
+    def user_adds_item_to_order(self): add_item_to_order(self, self.oder_id, 0)
 
     @seq_task(7)
-    def user_checks_out_order(self): checkout_order(self)
+    def user_checks_out_order(self): checkout_order(self, self.oder_id)
 
     @seq_task(8)
     def payment_is_cancelled(self): cancel_payment(self)
@@ -321,19 +320,19 @@ class LoadTest3(TaskSequence):
     def user_creates_account(self): create_user(self)
 
     @seq_task(6)
-    def user_adds_balance(self): add_balance_to_user(self)
+    def user_adds_balance(self): add_balance_to_user(self, self.user_id)
 
     @seq_task(7)
-    def user_creates_order(self): create_order(self)
+    def user_creates_order(self): create_order(self, self.user_id)
 
     @seq_task(8)
-    def user_adds_item1_to_order(self): add_item_to_order(self, 0)
+    def user_adds_item1_to_order(self): add_item_to_order(self, self.oder_id, 0)
 
     @seq_task(9)
-    def user_adds_item2_to_order(self): add_item_to_order(self, 1)
+    def user_adds_item2_to_order(self): add_item_to_order(self, self.oder_id, 1)
 
     @seq_task(10)
-    def user_checks_out_order(self): checkout_order(self)
+    def user_checks_out_order(self): checkout_order(self, self.oder_id)
 
 
 class LoadTest4(TaskSequence):
@@ -364,22 +363,22 @@ class LoadTest4(TaskSequence):
     def user_creates_account(self): create_user(self)
 
     @seq_task(4)
-    def user_adds_balance(self): add_balance_to_user(self)
+    def user_adds_balance(self): add_balance_to_user(self, self.user_id)
 
     @seq_task(5)
-    def user_creates_order(self): create_order(self)
+    def user_creates_order(self): create_order(self, self.user_id)
 
     @seq_task(6)
-    def user_adds_item_to_order(self): add_item_to_order(self, 0)
+    def user_adds_item_to_order(self): add_item_to_order(self, self.oder_id, 0)
 
     @seq_task(7)
     def user_removes_item_from_order(self): remove_item_from_order(self, 0)
 
     @seq_task(8)
-    def user_adds_item_to_order_again(self): add_item_to_order(self, 0)
+    def user_adds_item_to_order_again(self): add_item_to_order(self, self.oder_id, 0)
 
     @seq_task(9)
-    def user_checks_out_order(self): checkout_order(self)
+    def user_checks_out_order(self): checkout_order(self, self.oder_id)
 
 
 class LoadTest5(TaskSequence):
@@ -416,22 +415,22 @@ class LoadTest5(TaskSequence):
     def user_creates_account(self): create_user(self)
 
     @seq_task(6)
-    def user_adds_balance(self): add_balance_to_user(self)
+    def user_adds_balance(self): add_balance_to_user(self, self.user_id)
 
     @seq_task(7)
-    def user_creates_order(self): create_order(self)
+    def user_creates_order(self): create_order(self, self.user_id)
 
     @seq_task(8)
-    def user_adds_item1_to_order(self): add_item_to_order(self, 0)
+    def user_adds_item1_to_order(self): add_item_to_order(self, self.oder_id, 0)
 
     @seq_task(9)
-    def user_adds_item2_to_order(self): add_item_to_order(self, 1)
+    def user_adds_item2_to_order(self): add_item_to_order(self, self.oder_id, 1)
 
     @seq_task(10)
     def stock_admin_makes_item2s_stock_zero(self): make_items_stock_zero(self, 1)
 
     @seq_task(11)
-    def user_checks_out_order(self): checkout_order_that_is_supposed_to_fail(self, 0)
+    def user_checks_out_order(self): checkout_order_that_is_supposed_to_fail(self, 0, self.order_id)
 
 
 class LoadTest6(TaskSequence):
@@ -462,13 +461,13 @@ class LoadTest6(TaskSequence):
     def user_creates_account(self): create_user(self)
 
     @seq_task(4)
-    def user_creates_order(self): create_order(self)
+    def user_creates_order(self): create_order(self, self.user_id)
 
     @seq_task(5)
-    def user_adds_item_to_order(self): add_item_to_order(self, 0)
+    def user_adds_item_to_order(self): add_item_to_order(self, self.oder_id, 0)
 
     @seq_task(6)
-    def user_checks_out_order(self): checkout_order_that_is_supposed_to_fail(self, 1)
+    def user_checks_out_order(self): checkout_order_that_is_supposed_to_fail(self, 1, self.order_id)
 
 
 class LoadTest7(TaskSequence):
@@ -512,21 +511,21 @@ class LoadTest7(TaskSequence):
 
     @seq_task(6)
     def user_creates_order(self):
-        create_order(self)
+        create_order(self, self.user_id)
 
     @seq_task(7)
     def user_adds_balance(self):
-        add_balance_to_user(self)
+        add_balance_to_user(self, self.user_id)
 
     @seq_task(8)
     def user_adds_item_to_order(self):
         for i in range(20):
-            add_item_to_order(self, random.randrange(4))
+            add_item_to_order(self, self.oder_id, random.randrange(4))
 
     @seq_task(9)
     def user_adds_more_item_to_order(self):
         for i in range(15):
-            add_item_to_order(self, random.randrange(4))
+            add_item_to_order(self, self.oder_id, random.randrange(4))
 
     @seq_task(10)
     def do_nothing1(self):
@@ -579,26 +578,73 @@ class LoadTest8(TaskSequence):
     def user_creates_account(self): create_user(self)
 
     @seq_task(5)
-    def user_creates_order(self): create_order(self)
+    def user_creates_order(self): create_order(self, self.user_id)
 
     @seq_task(6)
     def user_adds_balance(self):
-        add_balance_to_user(self)
+        add_balance_to_user(self, self.user_id)
 
     @seq_task(7)
     def add_items_to_order(self):
-        add_item_to_order(self, 0)
-        add_item_to_order(self, 1)
-        add_item_to_order(self, 2)
+        add_item_to_order(self, self.oder_id, 0)
+        add_item_to_order(self, self.oder_id, 1)
+        add_item_to_order(self, self.oder_id, 2)
 
     @seq_task(8)
     def fail_checkout(self):
         creds = get_credits(self)
         stocks = get_stock_qtd(self)
-        checkout_order_that_is_supposed_to_fail(self, 0)
+        checkout_order_that_is_supposed_to_fail(self, 0, self.order_id)
         credits_consistency(self, creds)
         stock_consistency(self, stocks)
 
+class LoadTest9(TaskSequence):
+    """
+    Scenario where two users try to checkout the same item with limited stock.
+    """
+
+    def on_start(self):
+        self.item_ids = list()
+        self.user_id = -1
+        self.order_id = -1
+        self.balance = 0
+
+    def on_stop(self):
+        self.item_ids = list()
+        self.user_id = -1
+        self.order_id = -1
+
+    @seq_task(1)
+    def admin_creates_item(self):
+        create_item(self)
+        add_stock(self, 0, 1)
+
+    @seq_task(4)
+    def create_accounts(self):
+        create_user(self)
+        self.second_user_id = self.user_id
+        create_user(self)
+
+    @seq_task(5)
+    def creates_orders(self):
+        create_order(self, self.second_user_id)
+        self.second_order_id = self.order_id
+        create_order(self, self.user_id)
+
+    @seq_task(6)
+    def users_adds_balance(self):
+        add_balance_to_user(self, self.user_id)
+        add_balance_to_user(self, self.second_user_id)
+
+    @seq_task(7)
+    def add_items_to_order(self):
+        add_item_to_order(self, self.oder_id, 0)
+        add_item_to_order(self, self.second_order_id, 0)
+
+    @seq_task(8)
+    def check_checkouts(self):
+        checkout_order(self, self.order_id)
+        checkout_order_that_is_supposed_to_fail(self, 0, self.second_order_id)
 
 class LoadTests(TaskSet):
     # [TaskSequence]: [weight of the TaskSequence]
@@ -609,8 +655,9 @@ class LoadTests(TaskSet):
         LoadTest4: 0,
         LoadTest5: 5,
         LoadTest6: 10,
-        LoadTest7: 40,
-        LoadTest8: 40
+        LoadTest7: 35,
+        LoadTest8: 35,
+        LoadTest9: 10
     }
 
 
