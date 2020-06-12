@@ -168,7 +168,7 @@ namespace Grains
         {
             if (_order.State.Exists)
             {
-                return Task.FromResult(this.GetPrimaryKey());
+                return Task.FromResult(this._order.State.UserId);
             }
 
             throw new OrderDoesNotExistsException();
