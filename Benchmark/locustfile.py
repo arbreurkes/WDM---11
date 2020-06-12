@@ -8,7 +8,7 @@ from locust import HttpLocust, TaskSet, TaskSequence, seq_task, between
 ORDER_URL = "https://localhost:5001"
 
 
-#ORDER_URL = "https://wdmorleans.azurewebsites.net/"
+ORDER_URL = "https://wdmorleans.azurewebsites.net/"
 PAYMENT_URL = ORDER_URL
 STOCK_URL = PAYMENT_URL
 USER_URL = STOCK_URL
@@ -602,13 +602,13 @@ class LoadTests(TaskSet):
     # [TaskSequence]: [weight of the TaskSequence]
     tasks = {
         LoadTest1: 5,
-        LoadTest2: 0,
-        LoadTest3: 0,
-        LoadTest4: 0,
-        LoadTest5: 5,
+        LoadTest2: 5,
+        LoadTest3: 5,
+        LoadTest4: 5,
+        LoadTest5: 10,
         LoadTest6: 10,
-        LoadTest7: 40,
-        LoadTest8: 40
+        LoadTest7: 30,
+        LoadTest8: 30
     }
 
 
