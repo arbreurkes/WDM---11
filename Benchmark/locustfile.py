@@ -1,14 +1,12 @@
 import random
 from typing import List
 
-
 from locust import HttpLocust, TaskSet, TaskSequence, seq_task, between
 
 # replace the example urls and ports with the appropriate ones
 ORDER_URL = "https://localhost:5001"
 
-
-ORDER_URL = "https://wdmorleans.azurewebsites.net/"
+# ORDER_URL = "https://wdmorleans.azurewebsites.net/"
 PAYMENT_URL = ORDER_URL
 STOCK_URL = PAYMENT_URL
 USER_URL = STOCK_URL
@@ -22,7 +20,7 @@ def subtract_stock(self, item_idx: int, amount: int):
 
 def find_stock(self, item_idx: int):
     response = self.client.post(f"{STOCK_URL}/stock/find/{self.item_ids[item_idx]}",
-                    name="/stock/find/[item_id]")
+                                name="/stock/find/[item_id]")
     if 400 <= response.status_code < 600:
         response.failure(response.text)
     else:
@@ -37,14 +35,14 @@ def get_stock_qtd(self):
 
 
 def add_stock(self, item_idx: int):
-    stock_to_add = random.randint(100,1000)
+    stock_to_add = random.randint(100, 1000)
     self.client.post(f"{STOCK_URL}/stock/add/{self.item_ids[item_idx]}/{stock_to_add}",
                      name="/stock/add/[item_id]/[number]")
 
 
-def create_item(self):
-    price = random.randint(1, 10)
-    response = self.client.post(f"{STOCK_URL}/stock/item/create/{price}", name="/stock/item/create/[price]",verify = False)
+def create_item(self, price=random.randint(1, 10)):
+    response = self.client.post(f"{STOCK_URL}/stock/item/create/{price}", name="/stock/item/create/[price]",
+                                verify=False)
     self.item_ids.append(response.json()['item_id'])
 
 
@@ -54,11 +52,13 @@ def make_items_stock_zero(self, item_idx: int):
     self.client.post(f"{STOCK_URL}/stock/subtract/{self.item_ids[item_idx]}/{stock_to_subtract}",
                      name="/stock/subtract/[item_id]/[number]")
 
-def stock_consistency(self,stocks):
+
+def stock_consistency(self, stocks):
     qtds = get_stock_qtd(self)
     for i in range(len(qtds)):
-        if(stocks[i] != qtds[i]):
+        if (stocks[i] != qtds[i]):
             raise Exception
+
 
 # USER
 def create_user(self):
@@ -85,28 +85,27 @@ def find_user(self):
 
 def subtract_balance_from_user(self, amount: int):
     response = self.client.post(f"{USER_URL}/users/credit/subtract/{self.user_id}/{amount}",
-                     name="/users/credit/subtract/[user_id]/[amount]")
+                                name="/users/credit/subtract/[user_id]/[amount]")
     if 400 <= response.status_code < 600:
         response.failure(response.text)
     else:
         response.success()
 
 
-def add_balance_to_user(self):
-    balance_to_add = random.randint(10000, 100000)
-    self.client.post(f"{USER_URL}/users/credit/add/{self.user_id}/{balance_to_add}",
+def add_balance_to_user(self, amount=random.randint(10000, 100000)):
+    self.client.post(f"{USER_URL}/users/credit/add/{self.user_id}/{amount}",
                      name="/users/credit/add/[user_id]/[amount]")
 
 
-def credits_consistency(self,credits):
+def credits_consistency(self, credits):
     response = self.client.get(f"{USER_URL}/users/find/{self.user_id}",
-                                        name="/users/find/[user_id]").json()
+                               name="/users/find/[user_id]").json()
     _creds = response["credits"]
-    if(credits != creds):
-        response.failure("Inconsistent credits")    
+    if (credits != creds):
+        response.failure("Inconsistent credits")
     else:
         response.success()
-    
+
 
 # ORDER
 def create_order(self):
@@ -169,13 +168,10 @@ def checkout_order_that_is_supposed_to_fail(self, reason: int):
             response.failure("This was supposed to fail: Not enough credit")
 
 
-
-
-
-
 # Payment
 def payment_pay(self):
-    response = self.client.post(f"{PAYMENT_URL}/payment/pay/{self.user_id}/{self.order_id}/0",name="/pay/[user_id]/[order_id]/0")
+    response = self.client.post(f"{PAYMENT_URL}/payment/pay/{self.user_id}/{self.order_id}/0",
+                                name="/pay/[user_id]/[order_id]/0")
     if 400 <= response.status_code < 600:
         response.failure(response.text)
     else:
@@ -183,44 +179,44 @@ def payment_pay(self):
 
 
 def cancel_payment(self):
-    self.client.post(f"{PAYMENT_URL}/payment/cancel/{self.user_id}/{self.order_id}",name="/cancel/[user_id]/[order_id]")
-    response = self.client.get(f"{PAYMENT_URL}/payment/status/{self.order_id}",name="/status/[order_id]").json()["paid"]
-    if(response == True):
+    self.client.post(f"{PAYMENT_URL}/payment/cancel/{self.user_id}/{self.order_id}",
+                     name="/cancel/[user_id]/[order_id]")
+    response = self.client.get(f"{PAYMENT_URL}/payment/status/{self.order_id}", name="/status/[order_id]").json()[
+        "paid"]
+    if (response == True):
         response.failure("Payment was not properly canceled")
     else:
         response.success()
 
+
 def get_credits(self):
-    
     creds = self.client.get(f"{USER_URL}/users/find/{self.user_id}",
-                                        name="/users/find/[user_id]", catch_response=True).json()['credits']
-    return creds    
+                            name="/users/find/[user_id]", catch_response=True).json()['credits']
+    return creds
 
 
 def get_order_cost(self):
-    
     total = self.client.get(f"{ORDER_URL}/orders/find/{self.order_id}",
-                                        name="/orders/find/[order_id]").json()['total_cost']
-    return total   
-    
+                            name="/orders/find/[order_id]").json()['total_cost']
+    return total
+
+
 def checkout_check_credits(self):
     total = get_order_cost(self)
     creds = get_credits(self)
     response = self.client.post(f"{ORDER_URL}/orders/checkout/{self.order_id}", name="/orders/checkout/[order_id]",
                                 catch_response=True)
     new_credits = get_credits(self)
-     
-    if(total-creds == new_credits):
-       response.success()
+
+    if creds - total == new_credits:
+        response.success()
     else:
-       response.failure("Inconsistent credits after checkout")
-        
-
-
+        response.failure("Inconsistent credits after checkout")
 
 
 def payment_status(self):
-    response = self.client.get(f"{PAYMENT_URL}/payment/status/{self.order_id}",name="/status/[order_id]", catch_response=True).json()
+    response = self.client.get(f"{PAYMENT_URL}/payment/status/{self.order_id}", name="/status/[order_id]",
+                               catch_response=True).json()
     if 400 <= response.status_code < 600:
         response.failure(response.text)
     else:
@@ -286,7 +282,7 @@ class LoadTest2(TaskSequence):
 
     @seq_task(7)
     def user_checks_out_order(self): checkout_order(self)
-    
+
     @seq_task(8)
     def payment_is_cancelled(self): cancel_payment(self)
 
@@ -473,13 +469,13 @@ class LoadTest6(TaskSequence):
 
     @seq_task(6)
     def user_checks_out_order(self): checkout_order_that_is_supposed_to_fail(self, 1)
-    
-   
-class LoadTest7(TaskSequence):
 
+
+class LoadTest7(TaskSequence):
     """
     Scenario where user adds a lot of items to its order and waits before checking out.
     """
+
     def on_start(self):
         self.item_ids = list()
         self.user_id = -1
@@ -490,67 +486,70 @@ class LoadTest7(TaskSequence):
         self.item_ids = list()
         self.user_id = -1
         self.order_id = -1
-        
+
     @seq_task(1)
-    def admin_creates_item1(self): 
+    def admin_creates_item1(self):
         create_item(self)
-        add_stock(self,0)
+        add_stock(self, 0)
 
     @seq_task(2)
-    def admin_creates_item3(self): 
+    def admin_creates_item3(self):
         create_item(self)
-        add_stock(self,1)
+        add_stock(self, 1)
+
     @seq_task(3)
-    def admin_creates_item4(self): 
+    def admin_creates_item4(self):
         create_item(self)
-        add_stock(self,2)
+        add_stock(self, 2)
+
     @seq_task(4)
-    def admin_creates_item5(self): 
+    def admin_creates_item5(self):
         create_item(self)
+
     @seq_task(5)
-    def user_creates_account(self): create_user(self)
+    def user_creates_account(self):
+        create_user(self)
 
     @seq_task(6)
-    def user_creates_order(self): create_order(self)
+    def user_creates_order(self):
+        create_order(self)
 
     @seq_task(7)
-    def user_adds_balance(self): 
+    def user_adds_balance(self):
         add_balance_to_user(self)
-      
 
     @seq_task(8)
-    def user_adds_item_to_order(self): 
+    def user_adds_item_to_order(self):
         for i in range(20):
             add_item_to_order(self, random.randrange(4))
-            
+
     @seq_task(9)
-    def user_adds_more_item_to_order(self): 
+    def user_adds_more_item_to_order(self):
         for i in range(15):
             add_item_to_order(self, random.randrange(4))
-            
-
 
     @seq_task(10)
     def do_nothing1(self):
         pass
-        
+
     @seq_task(11)
     def do_nothing2(self):
-        pass  
-        
+        pass
+
     @seq_task(12)
     def do_nothing3(self):
-        pass            
-        
+        pass
+
     @seq_task(13)
-    def user_checkouts(self): checkout_check_credits(self)
-        
-  
+    def user_checkouts(self):
+        checkout_check_credits(self)
+
+
 class LoadTest8(TaskSequence):
-    
     """
     Scenario where a user checkouts an order that is partially out of stock.
     """
+
     def on_start(self):
         self.item_ids = list()
         self.user_id = -1
@@ -561,20 +560,21 @@ class LoadTest8(TaskSequence):
         self.item_ids = list()
         self.user_id = -1
         self.order_id = -1
-        
+
     @seq_task(1)
-    def admin_creates_item1(self): 
+    def admin_creates_item1(self):
         create_item(self)
-        add_stock(self,0)
-        
+        add_stock(self, 0)
+
     @seq_task(2)
-    def admin_creates_item2(self): 
+    def admin_creates_item2(self):
         create_item(self)
-        add_stock(self,1)
+        add_stock(self, 1)
 
     @seq_task(3)
-    def admin_creates_item3(self): 
+    def admin_creates_item3(self):
         create_item(self)
+
     @seq_task(4)
     def user_creates_account(self): create_user(self)
 
@@ -582,20 +582,22 @@ class LoadTest8(TaskSequence):
     def user_creates_order(self): create_order(self)
 
     @seq_task(6)
-    def user_adds_balance(self): 
+    def user_adds_balance(self):
         add_balance_to_user(self)
+
     @seq_task(7)
     def add_items_to_order(self):
         add_item_to_order(self, 0)
         add_item_to_order(self, 1)
         add_item_to_order(self, 2)
+
     @seq_task(8)
     def fail_checkout(self):
         creds = get_credits(self)
         stocks = get_stock_qtd(self)
-        checkout_order_that_is_supposed_to_fail(self,0)
-        credits_consistency(self,creds)
-        stock_consistency(self,stocks)
+        checkout_order_that_is_supposed_to_fail(self, 0)
+        credits_consistency(self, creds)
+        stock_consistency(self, stocks)
 
 
 class LoadTests(TaskSet):
