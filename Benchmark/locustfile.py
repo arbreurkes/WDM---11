@@ -40,8 +40,7 @@ def add_stock(self, item_idx: int, amount=random.randint(100, 1000)):
 
 
 def create_item(self, price=random.randint(1, 10)):
-    response = self.client.post(f"{STOCK_URL}/stock/item/create/{price}", name="/stock/item/create/[price]",
-                                verify=False)
+    response = self.client.post(f"{STOCK_URL}/stock/item/create/{price}", name="/stock/item/create/[price]")    
     self.item_ids.append(response.json()['item_id'])
 
 
@@ -255,6 +254,7 @@ class LoadTest2(TaskSequence):
         self.item_ids = list()
         self.user_id = -1
         self.order_id = -1
+        self.client.verify = False
 
     def on_stop(self):
         self.item_ids = list()
@@ -298,6 +298,7 @@ class LoadTest3(TaskSequence):
         self.item_ids = list()
         self.user_id = -1
         self.order_id = -1
+        self.client.verify = False
 
     def on_stop(self):
         self.item_ids = list()
@@ -347,6 +348,7 @@ class LoadTest4(TaskSequence):
         self.item_ids = list()
         self.user_id = -1
         self.order_id = -1
+        self.client.verify = False
 
     def on_stop(self):
         self.item_ids = list()
@@ -393,6 +395,7 @@ class LoadTest5(TaskSequence):
         self.item_ids = list()
         self.user_id = -1
         self.order_id = -1
+        self.client.verify = False
 
     def on_stop(self):
         self.item_ids = list()
@@ -440,11 +443,13 @@ class LoadTest6(TaskSequence):
     item_ids: List[int]
     user_id: int
     order_id: int
+   
 
     def on_start(self):
         self.item_ids = list()
         self.user_id = -1
         self.order_id = -1
+        self.client.verify = False
 
     def on_stop(self):
         self.item_ids = list()
@@ -480,6 +485,7 @@ class LoadTest7(TaskSequence):
         self.user_id = -1
         self.order_id = -1
         self.balance = 0
+        self.client.verify = False
 
     def on_stop(self):
         self.item_ids = list()
@@ -554,6 +560,7 @@ class LoadTest8(TaskSequence):
         self.user_id = -1
         self.order_id = -1
         self.balance = 0
+        self.client.verify = False
 
     def on_stop(self):
         self.item_ids = list()
@@ -608,6 +615,7 @@ class LoadTest9(TaskSequence):
         self.user_id = -1
         self.order_id = -1
         self.balance = 0
+        self.client.verify = False
 
     def on_stop(self):
         self.item_ids = list()

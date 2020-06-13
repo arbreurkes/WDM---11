@@ -65,8 +65,8 @@ namespace ShoppingCart
                     .Build();
                     string connectionString = conf.GetConnectionString("BartsAzureTableStorage");
                     siloBuilder
-                    //.UseLocalhostClustering()
-                    .UseAzureStorageClustering(options => options.ConnectionString = connectionString)
+                    .UseLocalhostClustering()
+                    //.UseAzureStorageClustering(options => options.ConnectionString = connectionString)
                     .Configure<ClusterOptions>(opts =>
                     {
                         opts.ClusterId = "wdm-group11-orleans-silocluster";
