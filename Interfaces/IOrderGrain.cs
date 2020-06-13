@@ -14,9 +14,9 @@ namespace Infrastructure.Interfaces
 
         Task<Order> GetOrder();
 
-        Task<bool> AddItem(Stock item);
+        Task AddItem(Stock item);
 
-        Task<bool> RemoveItem(Stock item);
+        Task RemoveItem(Stock item);
 
         Task<decimal> GetTotalCost();
 

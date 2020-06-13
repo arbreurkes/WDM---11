@@ -56,7 +56,7 @@ namespace Grains
             return Task.FromResult(_order.State);
         }
 
-        public Task<bool> AddItem(Stock item)
+        public async Task AddItem(Stock item)
         {
             if (!_order.State.Exists)
             {
@@ -80,12 +80,11 @@ namespace Grains
                 OrderItem oi = new OrderItem() { Item = item, Quantity = 1 };
                 _order.State.Items.Add(id, oi);
             }
+            await _order.WriteStateAsync();
 
-            // _order.WriteStateAsync();
-            return Task.FromResult(true);
         }
 
-        public Task<bool> RemoveItem(Stock item)
+        public async Task RemoveItem(Stock item)
         {
             if (!_order.State.Exists)
             {
@@ -113,9 +112,8 @@ namespace Grains
             {
                 _order.State.RemoveItem(id);
             }
+           await _order.WriteStateAsync();
 
-            // _order.WriteStateAsync();
-            return Task.FromResult(true);
         }
 
         public Task<decimal> GetTotalCost()
@@ -142,10 +140,7 @@ namespace Grains
 
         public Task<bool> Checkout()
         {
-            // foreach (Stock item in order.Items)
-            // {
-            //     //ToDo: subtract stock.
-            // }
+         
             return Task.FromResult(_order.State.Checkout());
         }
 

@@ -277,10 +277,10 @@ class LoadTest2(TaskSequence):
     def user_creates_order(self): create_order(self, self.user_id)
 
     @seq_task(6)
-    def user_adds_item_to_order(self): add_item_to_order(self, self.oder_id, 0)
+    def user_adds_item_to_order(self): add_item_to_order(self, self.order_id, 0)
 
     @seq_task(7)
-    def user_checks_out_order(self): checkout_order(self, self.oder_id)
+    def user_checks_out_order(self): checkout_order(self, self.order_id)
 
     @seq_task(8)
     def payment_is_cancelled(self): cancel_payment(self)
@@ -326,13 +326,13 @@ class LoadTest3(TaskSequence):
     def user_creates_order(self): create_order(self, self.user_id)
 
     @seq_task(8)
-    def user_adds_item1_to_order(self): add_item_to_order(self, self.oder_id, 0)
+    def user_adds_item1_to_order(self): add_item_to_order(self, self.order_id, 0)
 
     @seq_task(9)
-    def user_adds_item2_to_order(self): add_item_to_order(self, self.oder_id, 1)
+    def user_adds_item2_to_order(self): add_item_to_order(self, self.order_id, 1)
 
     @seq_task(10)
-    def user_checks_out_order(self): checkout_order(self, self.oder_id)
+    def user_checks_out_order(self): checkout_order(self, self.order_id)
 
 
 class LoadTest4(TaskSequence):
@@ -369,16 +369,16 @@ class LoadTest4(TaskSequence):
     def user_creates_order(self): create_order(self, self.user_id)
 
     @seq_task(6)
-    def user_adds_item_to_order(self): add_item_to_order(self, self.oder_id, 0)
+    def user_adds_item_to_order(self): add_item_to_order(self, self.order_id, 0)
 
     @seq_task(7)
     def user_removes_item_from_order(self): remove_item_from_order(self, 0)
 
     @seq_task(8)
-    def user_adds_item_to_order_again(self): add_item_to_order(self, self.oder_id, 0)
+    def user_adds_item_to_order_again(self): add_item_to_order(self, self.order_id, 0)
 
     @seq_task(9)
-    def user_checks_out_order(self): checkout_order(self, self.oder_id)
+    def user_checks_out_order(self): checkout_order(self, self.order_id)
 
 
 class LoadTest5(TaskSequence):
@@ -421,10 +421,10 @@ class LoadTest5(TaskSequence):
     def user_creates_order(self): create_order(self, self.user_id)
 
     @seq_task(8)
-    def user_adds_item1_to_order(self): add_item_to_order(self, self.oder_id, 0)
+    def user_adds_item1_to_order(self): add_item_to_order(self, self.order_id, 0)
 
     @seq_task(9)
-    def user_adds_item2_to_order(self): add_item_to_order(self, self.oder_id, 1)
+    def user_adds_item2_to_order(self): add_item_to_order(self, self.order_id, 1)
 
     @seq_task(10)
     def stock_admin_makes_item2s_stock_zero(self): make_items_stock_zero(self, 1)
@@ -464,7 +464,7 @@ class LoadTest6(TaskSequence):
     def user_creates_order(self): create_order(self, self.user_id)
 
     @seq_task(5)
-    def user_adds_item_to_order(self): add_item_to_order(self, self.oder_id, 0)
+    def user_adds_item_to_order(self): add_item_to_order(self, self.order_id, 0)
 
     @seq_task(6)
     def user_checks_out_order(self): checkout_order_that_is_supposed_to_fail(self, 1, self.order_id)
@@ -520,12 +520,12 @@ class LoadTest7(TaskSequence):
     @seq_task(8)
     def user_adds_item_to_order(self):
         for i in range(20):
-            add_item_to_order(self, self.oder_id, random.randrange(4))
+            add_item_to_order(self, self.order_id, random.randrange(4))
 
     @seq_task(9)
     def user_adds_more_item_to_order(self):
         for i in range(15):
-            add_item_to_order(self, self.oder_id, random.randrange(4))
+            add_item_to_order(self, self.order_id, random.randrange(4))
 
     @seq_task(10)
     def do_nothing1(self):
@@ -586,9 +586,9 @@ class LoadTest8(TaskSequence):
 
     @seq_task(7)
     def add_items_to_order(self):
-        add_item_to_order(self, self.oder_id, 0)
-        add_item_to_order(self, self.oder_id, 1)
-        add_item_to_order(self, self.oder_id, 2)
+        add_item_to_order(self, self.order_id, 0)
+        add_item_to_order(self, self.order_id, 1)
+        add_item_to_order(self, self.order_id, 2)
 
     @seq_task(8)
     def fail_checkout(self):
@@ -638,7 +638,7 @@ class LoadTest9(TaskSequence):
 
     @seq_task(7)
     def add_items_to_order(self):
-        add_item_to_order(self, self.oder_id, 0)
+        add_item_to_order(self, self.order_id, 0)
         add_item_to_order(self, self.second_order_id, 0)
 
     @seq_task(8)
@@ -649,15 +649,15 @@ class LoadTest9(TaskSequence):
 class LoadTests(TaskSet):
     # [TaskSequence]: [weight of the TaskSequence]
     tasks = {
-        LoadTest1: 5,
-        LoadTest2: 5,
-        LoadTest3: 5,
-        LoadTest4: 5,
+        LoadTest1: 0,
+        LoadTest2: 0,
+        LoadTest3: 10,
+        LoadTest4: 10,
         LoadTest5: 10,
         LoadTest6: 10,
-        LoadTest7: 25,
-        LoadTest8: 30,
-        LoadTest9: 5
+        LoadTest7: 20,
+        LoadTest8: 20,
+        LoadTest9: 20
     }
 
 
