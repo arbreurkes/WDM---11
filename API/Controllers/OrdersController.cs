@@ -47,7 +47,6 @@ namespace API.Controllers
         public async Task AddItem(Guid order_id, Guid item_id)
         {
             var order = _client.GetGrain<IOrderGrain>(order_id);
-            // Should receive the item_id? The item itself or the grain?
             var item = _client.GetGrain<IStockGrain>(item_id);
             await order.AddItem(await item.GetStock());
         }
