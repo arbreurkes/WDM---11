@@ -66,7 +66,7 @@ namespace ShoppingCart
                     string connectionString = conf.GetConnectionString("BartsAzureTableStorage");
                     siloBuilder
                     .UseLocalhostClustering()
-                    //.UseAzureStorageClustering(options => options.ConnectionString = connectionString)
+                    .UseAzureStorageClustering(options => options.ConnectionString = connectionString)
                     .Configure<ClusterOptions>(opts =>
                     {
                         opts.ClusterId = "wdm-group11-orleans-silocluster";
@@ -109,10 +109,7 @@ namespace ShoppingCart
                 .UseDashboard(opts => {
                     opts.HostSelf = false;
                 })
-                .Configure<EndpointOptions>(opts =>
-                    {
-                        opts.AdvertisedIPAddress = IPAddress.Loopback;
-                    })
+                .ConfigureEndpoints(siloPort: 11111, gatewayPort: 30000)
                 .AddAzureTableTransactionalStateStorage(
                     name: "transactionStore",
                     configureOptions: options =>

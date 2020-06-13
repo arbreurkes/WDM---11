@@ -6,7 +6,8 @@ from locust import HttpLocust, TaskSet, TaskSequence, seq_task, between
 # replace the example urls and ports with the appropriate ones
 ORDER_URL = "https://localhost:5001"
 
-# ORDER_URL = "https://wdmorleans.azurewebsites.net/"
+
+#ORDER_URL = "https://wdmorleans.azurewebsites.net/"
 PAYMENT_URL = ORDER_URL
 STOCK_URL = PAYMENT_URL
 USER_URL = STOCK_URL
@@ -97,10 +98,10 @@ def add_balance_to_user(self, user_id, amount=random.randint(10000, 100000)):
 
 def credits_consistency(self, credits):
     response = self.client.get(f"{USER_URL}/users/find/{self.user_id}",
-                               name="/users/find/[user_id]").json()
-    _creds = response["credits"]
-    if credits != _creds:
-        response.failure("Inconsistent credits")
+                                        name="/users/find/[user_id]").json()
+    _creds = response["credit"]
+    if(credits != creds):
+        response.failure("Inconsistent credits")    
     else:
         response.success()
 
