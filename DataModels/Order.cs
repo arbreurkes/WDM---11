@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Azure.Cosmos.Table;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,17 +7,17 @@ using System.Linq;
 namespace DataModels
 {
     [Serializable]
-    public class Order
+    public class Order : TableEntity
     {
         [JsonProperty(PropertyName = "user_id")]
         public Guid UserId { get; private set; } //FK of use
         
         [JsonProperty(PropertyName = "order_id")]
         public Guid ID { get; private set; }
-        [JsonProperty(PropertyName = "items")]
+        [JsonIgnore]
         public Dictionary<Guid, OrderItem> Items { get; } = new Dictionary<Guid, OrderItem>();
 
-        [JsonIgnore] //Deprecated
+        [JsonProperty(PropertyName = "items")]
         public List<Guid> ItemsList => Items.Keys.ToList();
 
         [JsonProperty(PropertyName = "total_cost")]
