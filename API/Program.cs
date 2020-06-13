@@ -65,8 +65,8 @@ namespace ShoppingCart
                     .Build();
                     string connectionString = conf.GetConnectionString("BartsAzureTableStorage");
                     siloBuilder
-                    .UseLocalhostClustering()
-                    //.UseAzureStorageClustering(options => options.ConnectionString = connectionString)
+                    //.UseLocalhostClustering()
+                    .UseAzureStorageClustering(options => options.ConnectionString = connectionString)
                     .Configure<ClusterOptions>(opts =>
                     {
                         opts.ClusterId = "wdm-group11-orleans-silocluster";
@@ -80,7 +80,6 @@ namespace ShoppingCart
                 .Configure<GrainCollectionOptions>(options =>
                 {
                     options.CollectionAge = TimeSpan.FromMinutes(5);
-                    options.ClassSpecificCollectionAge[typeof(IStockGrain).FullName] = TimeSpan.FromMinutes(10);
 
                 })
                 .AddAzureTableGrainStorage(
