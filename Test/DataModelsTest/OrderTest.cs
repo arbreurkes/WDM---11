@@ -197,17 +197,17 @@ namespace Test.DataModelsTest
             Assert.False(_order.CanComplete);
         }
         
-        /// <summary>
-        /// Test method for CanComplete under right conditions.
-        /// </summary>
-        [Test]
-        public void TestCanCompleteTrue()
-        {
-            _order.Create(new Guid(), new Guid());
-            _order.Checkout();
-            
-            Assert.True(_order.CanComplete);
-        }
+        // /// <summary>
+        // /// Test method for CanComplete under right conditions.
+        // /// </summary>
+        // [Test]
+        // public void TestCanCompleteTrue()
+        // {
+        //     _order.Create(new Guid(), new Guid());
+        //     _order.Checkout();
+        //     
+        //     Assert.True(_order.CanComplete);
+        // }
         
         /// <summary>
         /// Test method for Total.
@@ -292,7 +292,7 @@ namespace Test.DataModelsTest
         {
             _order.Create(new Guid(), new Guid());
             _order.Checkout();
-
+        
             Assert.True(_order.CancelCheckout());
         }
     }

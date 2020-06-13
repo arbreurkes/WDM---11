@@ -46,16 +46,18 @@ namespace Test.GrainsTest
         public async Task ChangeAmountTestCannotHaveLessThanZero()
         {
             var stockGrain = _testCluster.GrainFactory.GetGrain<IStockGrain>(new Guid());
+            await stockGrain.Clear();
             await stockGrain.Create(_price);
 
             Assert.ThrowsAsync<InvalidQuantityException>( () => stockGrain.ChangeAmount(-42));
         }
         
         [Test]
-        public void ChangeAmountTestStockNotExists()
+        public async Task ChangeAmountTestStockNotExists()
         {
             Guid guid = new Guid();
             var stockGrain = _testCluster.GrainFactory.GetGrain<IStockGrain>(guid);
+            await stockGrain.Clear();
 
             Assert.ThrowsAsync<StockDoesNotExistsException>( () => stockGrain.ChangeAmount(-42));
         }
@@ -70,17 +72,19 @@ namespace Test.GrainsTest
         }
 
         [Test]
-        public void GetStockTestStockNotExists()
+        public async Task GetStockTestStockNotExists()
         {
             var stockGrain = _testCluster.GrainFactory.GetGrain<IStockGrain>(new Guid());
+            await stockGrain.Clear();
 
             Assert.ThrowsAsync<StockDoesNotExistsException>(() => stockGrain.GetStock());
         }
         
         [Test]
-        public void getAmountTeststockNotExists()
+        public async Task getAmountTeststockNotExists()
         {
             var stockGrain = _testCluster.GrainFactory.GetGrain<IStockGrain>(new Guid());
+            await stockGrain.Clear();
 
             Assert.ThrowsAsync<StockDoesNotExistsException>(() => stockGrain.GetAmount());
         }

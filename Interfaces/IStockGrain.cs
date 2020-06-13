@@ -11,5 +11,6 @@ namespace Infrastructure.Interfaces
         Task ChangeAmount(int amount);
         Task<int> GetAmount();
         Task<Stock> Create(decimal price);
+        Task Clear();
     }
 }
