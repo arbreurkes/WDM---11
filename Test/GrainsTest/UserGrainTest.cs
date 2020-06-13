@@ -36,8 +36,8 @@ namespace Test.GrainsTest
         {
             var userGrain = _testCluster.GrainFactory.GetGrain<IUserGrain>(new Guid());
             await userGrain.CreateUser();
-
-            Assert.True(await userGrain.RemoveUser());
+            
+            Assert.IsInstanceOf<Task>(userGrain.RemoveUser());
         }
 
         [Test]
@@ -90,8 +90,8 @@ namespace Test.GrainsTest
         {
             var userGrain = _testCluster.GrainFactory.GetGrain<IUserGrain>(new Guid());
             await userGrain.CreateUser();
-
-            Assert.True(await userGrain.ChangeCredit(new decimal(42)));
+            
+            Assert.IsInstanceOf<Task>(userGrain.ChangeCredit(new decimal(42)));
         }
         
         [Test]
@@ -101,7 +101,7 @@ namespace Test.GrainsTest
             await userGrain.CreateUser();
             await userGrain.ChangeCredit(new decimal(42));
             
-            Assert.False(await userGrain.ChangeCredit(new decimal(-42.42)));
+            Assert.IsInstanceOf<Task>(userGrain.ChangeCredit(new decimal(-42.42)));
         }
         
         [Test]

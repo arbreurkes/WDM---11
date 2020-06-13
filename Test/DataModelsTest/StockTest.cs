@@ -66,7 +66,7 @@ namespace Test.DataModelsTest
         [Test]
         public void ExistsTestTrue()
         {
-            _stock.ID = new Guid();
+            _stock.Price = new decimal(42);
             
             Assert.True(_stock.Exists);
         }

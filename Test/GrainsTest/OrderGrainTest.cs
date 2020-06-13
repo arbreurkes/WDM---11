@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using DataModels;
-using Grains;
 using Infrastructure.Interfaces;
 using NUnit.Framework;
 using Orleans.TestingHost;
@@ -45,9 +44,9 @@ namespace Test.GrainsTest
         }
         
         [Test]
-        public async Task RemoveOrderTestOrderNotExists()
+        public void RemoveOrderTestOrderNotExists()
         {
-            Assert.False(await _orderGrain.RemoveOrder());
+            Assert.ThrowsAsync<OrderDoesNotExistsException>(() => _orderGrain.RemoveOrder());
         }
         
         [Test]
@@ -64,16 +63,16 @@ namespace Test.GrainsTest
             Assert.ThrowsAsync<OrderDoesNotExistsException>(() => _orderGrain.GetOrder());
         }
         
-        [Test]
-        public async Task AddItemTestNotYetInOrder()
-        {
-            await _orderGrain.CreateOrder(_guid);
-
-            var item = new Stock {ID = _guid, Price = _price};
-            await _orderGrain.AddItem(item);
-
-            Assert.True(await _orderGrain.AddItem(item));
-        }
+        // [Test]
+        // public async Task AddItemTestNotYetInOrder()
+        // {
+        //     await _orderGrain.CreateOrder(_guid);
+        //
+        //     var item = new Stock {ID = _guid, Price = _price};
+        //     await _orderGrain.AddItem(item);
+        //     
+        //     Assert.IsInstanceOf<Task>(_orderGrain.AddItem(item));
+        // }
         
         [Test]
         public async Task AddItemGetCostTestAlreadyInOrder()
@@ -91,8 +90,8 @@ namespace Test.GrainsTest
         {
             await _orderGrain.CreateOrder(_guid);
             var item = new Stock();
-
-            Assert.False(await _orderGrain.AddItem(item));
+            
+            Assert.ThrowsAsync<ItemDoesNotExistException>(() => _orderGrain.AddItem(item));
         }
         
         [Test]
@@ -105,30 +104,30 @@ namespace Test.GrainsTest
         public async Task RemoveItemGetCostTestTrue()
         {
             await _orderGrain.CreateOrder(_guid);
-            var item = new Stock {ID = _guid};
+            var item = new Stock {ID = _guid, Price = Decimal.One};
             await _orderGrain.AddItem(item);
 
-            Assert.True(await _orderGrain.RemoveItem(item));
+            Assert.IsInstanceOf<Task>(_orderGrain.RemoveItem(item));
         }
         
         [Test]
         public async Task RemoveItemGetCostTestNotEnoughInOrder()
         {
             await _orderGrain.CreateOrder(_guid);
-            var item = new Stock {ID = _guid};
+            var item = new Stock {ID = _guid, Price = Decimal.One};
             await _orderGrain.AddItem(item);
             await _orderGrain.RemoveItem(item);
-
-            Assert.False(await _orderGrain.RemoveItem(item));
+            
+            Assert.ThrowsAsync<ItemNotInOrderException>(() => _orderGrain.RemoveItem(item));
         }
         
         [Test]
         public async Task RemoveItemTestNotInOrder()
         {
             await _orderGrain.CreateOrder(_guid);
-            var item = new Stock {ID = _guid};
-
-            Assert.False(await _orderGrain.RemoveItem(item));
+            var item = new Stock {ID = _guid, Price = Decimal.One};
+            
+            Assert.ThrowsAsync<ItemNotInOrderException>(() => _orderGrain.RemoveItem(item));
         }
         
         [Test]
@@ -136,8 +135,8 @@ namespace Test.GrainsTest
         {
             await _orderGrain.CreateOrder(_guid);
             var item = new Stock();
-
-            Assert.False(await _orderGrain.RemoveItem(item));
+            
+            Assert.ThrowsAsync<ItemDoesNotExistException>(() => _orderGrain.RemoveItem(item));
         }
         
         [Test]
@@ -163,9 +162,10 @@ namespace Test.GrainsTest
         }
         
         [Test]
-        public async Task GetStatusTestOrderNotExists()
+        public void GetStatusTestOrderNotExists()
         {
-            Assert.False((await _orderGrain.GetStatus()).Paid);
+            Assert.ThrowsAsync<OrderDoesNotExistsException>(() => _orderGrain.GetStatus());
+            
         }
         
         [Test]
@@ -222,8 +222,8 @@ namespace Test.GrainsTest
         public async Task CancelCheckoutNotCheckedOut()
         {
             await _orderGrain.CreateOrder(_guid);
-
-            Assert.False(await _orderGrain.CancelCheckout());
+            
+            Assert.ThrowsAsync<OrderDoesNotExistsException>(() => _orderGrain.CancelCheckout());
         }
         
         [Test]
@@ -233,13 +233,13 @@ namespace Test.GrainsTest
             await _orderGrain.Checkout();
             await _orderGrain.Complete();
 
-            Assert.False(await _orderGrain.CancelCheckout());
+            Assert.ThrowsAsync<OrderDoesNotExistsException>(() => _orderGrain.CancelCheckout());
         }
         
         [Test]
-        public async Task CancelCheckoutOrderNotExists()
+        public void CancelCheckoutOrderNotExists()
         {
-            Assert.False(await _orderGrain.CancelCheckout());
+            Assert.ThrowsAsync<OrderDoesNotExistsException>(() => _orderGrain.CancelCheckout());
         }
         
         [Test]

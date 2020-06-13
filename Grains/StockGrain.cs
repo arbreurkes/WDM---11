@@ -61,5 +61,10 @@ namespace Grains
             _stock.State.ID = this.GetPrimaryKey();
             return Task.FromResult(_stock.State);
         }
+
+        public async Task Clear()
+        {
+            await _stock.ClearStateAsync();
+        }
     }
 }
