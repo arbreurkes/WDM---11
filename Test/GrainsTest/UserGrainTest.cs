@@ -67,6 +67,17 @@ namespace Test.GrainsTest
 
             Assert.ThrowsAsync<UserDoesNotExistsException>(() => userGrain.GetCredit());
         }
+        
+        [Test]
+        public async Task GetCreditTestNotEnough()
+        {
+            var userGrain = _testCluster.GrainFactory.GetGrain<IUserGrain>(new Guid());
+            await userGrain.CreateUser();
+
+            decimal credit = new decimal(-42.42);
+
+            Assert.ThrowsAsync<NotEnoughCreditException>(() => userGrain.ChangeCredit(credit));
+        }
 
         [Test]
         public async Task GetUserTestTrue()

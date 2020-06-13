@@ -101,6 +101,17 @@ namespace Test.GrainsTest
         }
         
         [Test]
+        public async Task GetItemsTest()
+        {
+            await _orderGrain.CreateOrder(_guid);
+            var item = new Stock {ID = _guid, Price = _price};
+            await _orderGrain.AddItem(item);
+            await _orderGrain.AddItem(item);
+
+            Assert.AreEqual(1, (await _orderGrain.GetItems()).Count);
+        }
+        
+        [Test]
         public async Task RemoveItemGetCostTestTrue()
         {
             await _orderGrain.CreateOrder(_guid);
@@ -159,6 +170,16 @@ namespace Test.GrainsTest
             await _orderGrain.Complete();
 
             Assert.True((await _orderGrain.GetStatus()).Paid);
+        }
+        
+        [Test]
+        public async Task CancelCompleteTestTrue()
+        {
+            await _orderGrain.CreateOrder(_guid);
+            await _orderGrain.Checkout();
+            await _orderGrain.Complete();
+
+            Assert.True(await _orderGrain.CancelComplete());
         }
         
         [Test]

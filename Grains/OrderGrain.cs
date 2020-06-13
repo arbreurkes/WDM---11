@@ -107,12 +107,12 @@ namespace Grains
             {
                 _order.State.DecQuantity(id);
             }
-
             catch (InvalidQuantityException)
             {
                 _order.State.RemoveItem(id);
             }
-           await _order.WriteStateAsync();
+            
+            // await _order.WriteStateAsync();
 
         }
 
