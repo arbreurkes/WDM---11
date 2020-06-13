@@ -660,13 +660,13 @@ class LoadTests(TaskSet):
     tasks = {
         LoadTest1: 0,
         LoadTest2: 0,
-        LoadTest3: 10,
-        LoadTest4: 10,
-        LoadTest5: 10,
-        LoadTest6: 10,
-        LoadTest7: 20,
-        LoadTest8: 20,
-        LoadTest9: 20
+        LoadTest3: 0,
+        LoadTest4: 0,
+        LoadTest5: 50,
+        LoadTest6: 50,
+        LoadTest7: 0,
+        LoadTest8: 0,
+        LoadTest9: 0
     }
 
 

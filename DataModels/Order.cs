@@ -53,7 +53,6 @@ namespace DataModels
             if (CanCheckout)
             {
                 CheckedOutAt = DateTime.Now;
-                CompletedAt = DateTime.Now;
                 return true;
             }
 

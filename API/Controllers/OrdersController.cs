@@ -60,7 +60,7 @@ namespace API.Controllers
         }
 
         [HttpPost("checkout/{order_id}")]
-        public async Task Checkout(Guid order_id)
+        public async Task<ActionResult> Checkout(Guid order_id)
         {
             var order = _client.GetGrain<IOrderGrain>(order_id);
             var result = await order.Checkout();
@@ -76,12 +76,13 @@ namespace API.Controllers
                 try
                 {
                     await user_grain.ChangeCredit(-total_cost); //This can fail.
+
                 }
 
                 catch (NotEnoughCreditException)
                 {
                     await order.CancelCheckout();
-                    throw new NotEnoughCreditException();
+                    return NotFound();
                 }
 
                 var items = await order.GetItems();
@@ -107,8 +108,15 @@ namespace API.Controllers
                     }
                     await order.CancelCheckout();
                     await user_grain.ChangeCredit(total_cost);
+                 
+                    return NotFound();
                 }
+
+                await order.Complete();
+                return Ok();
             }
+
+            return NotFound();
 
            
         }
