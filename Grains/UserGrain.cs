@@ -11,22 +11,21 @@ namespace Grains
     public class UserGrain : Grain, IUserGrain
     {
         private readonly IPersistentState<User> _user;
-        private readonly ITransactionalState<User> _tuser;
 
-        public UserGrain([PersistentState("user", "userStore")] IPersistentState<User> user, [TransactionalState("tuser", "transactionStore")]  ITransactionalState<User> tuser)
+        public UserGrain([PersistentState("user", "userStore")] IPersistentState<User> user)
         {
             _user = user;
-            _tuser = tuser;
+          
         }
 
-        public Task<User> CreateUser()
+        public async Task<User> CreateUser()
         {
             _user.State.Create(this.GetPrimaryKey());
-            _user.WriteStateAsync();
-            return Task.FromResult(_user.State);
+             await _user.WriteStateAsync();
+            return _user.State;
         }
 
-        public Task<bool> RemoveUser()
+        public async Task RemoveUser()
         {
 
             if (!_user.State.Exists)
@@ -35,8 +34,9 @@ namespace Grains
             }
 
             //Remove user from database.
-            _user.ClearStateAsync();
-            return Task.FromResult(true);
+            await _user.ClearStateAsync();
+            this.DeactivateOnIdle();
+            
         }
 
         public Task<User> GetUser()
@@ -59,7 +59,7 @@ namespace Grains
             return Task.FromResult(_user.State.Credit);
         }
 
-        public Task<bool> ChangeCredit(decimal amount)
+        public async Task ChangeCredit(decimal amount)
         {
             if (!_user.State.Exists)
             {
@@ -72,8 +72,7 @@ namespace Grains
             }
                 
             _user.State.Credit += amount;
-            _user.WriteStateAsync();
-            return Task.FromResult(true);
+            await _user.WriteStateAsync();
         }
     }
 }

@@ -27,10 +27,10 @@ namespace API.Controllers
         }
 
         [HttpDelete("remove/{user_id}")]
-        public async Task<bool> RemoveUser(Guid user_id)
+        public async Task RemoveUser(Guid user_id)
         {
             var user = _client.GetGrain<IUserGrain>(user_id);
-            return await user.RemoveUser();
+            await user.RemoveUser();
         }
 
         [HttpGet("find/{user_id}")]
@@ -49,17 +49,17 @@ namespace API.Controllers
         } 
 
         [HttpPost("credit/substract/{id}/{amount}")]
-        public async Task<bool> SubstractCredit(Guid id, decimal amount)
+        public async Task SubstractCredit(Guid id, decimal amount)
         {
             var user = _client.GetGrain<IUserGrain>(id);
-            return await user.ChangeCredit(-amount);
+            await user.ChangeCredit(-amount);
         }
 
         [HttpPost("credit/add/{user_id}/{amount}")]
-        public async Task<bool> AddCredit(Guid user_id, decimal amount)
+        public async Task AddCredit(Guid user_id, decimal amount)
         {
             var user = _client.GetGrain<IUserGrain>(user_id);
-            return await user.ChangeCredit(amount);
+            await user.ChangeCredit(amount);
         }
        
     }

@@ -11,16 +11,13 @@ namespace Grains
     public class StockGrain : Grain, IStockGrain
     {
         private readonly IPersistentState<Stock> _stock;
-        private readonly ITransactionalState<Stock> _tstock;
 
-        public StockGrain([PersistentState("stock", "stockStore")] IPersistentState<Stock> stock,[TransactionalState("tstock", "transactionStore")] ITransactionalState<Stock> tstock)
+        public StockGrain([PersistentState("stock", "stockStore")] IPersistentState<Stock> stock)
         {
             _stock = stock;
-            _tstock = tstock;
         }
 
-        [Transaction(TransactionOption.CreateOrJoin)]
-        public Task<bool> ChangeAmount(int amount)
+        public async Task ChangeAmount(int amount)
         {
             if (!_stock.State.Exists)
             {
@@ -34,8 +31,7 @@ namespace Grains
             }
 
             _stock.State.Quantity += amount;
-            //_stock.WriteStateAsync();
-            return Task.FromResult(true);
+           await _stock.WriteStateAsync();
         }
 
         public Task<Stock> GetStock()

@@ -26,9 +26,10 @@ namespace API.Controllers
             var order = _client.GetGrain<IOrderGrain>(order_id);
             var total = await order.GetTotalCost();
             //What to do with amount?
-            if (await user.ChangeCredit(-total)) return await order.Complete();
+            await user.ChangeCredit(-total);
+            return await order.Complete();
 
-            return false;
+            
         }
 
         [HttpPost("cancel/{user_id}/{order_id}")]
@@ -41,7 +42,8 @@ namespace API.Controllers
 
             if (await order.CancelComplete())
             {
-                return await user.ChangeCredit(total);
+                await user.ChangeCredit(total);
+                return true;
             }
 
             return false;
