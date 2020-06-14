@@ -9,18 +9,18 @@ namespace DataModels
     [Serializable]
     public class Order : TableEntity
     {
-        [JsonProperty(PropertyName = "user_id")]
         public Guid UserId { get; private set; } //FK of use
-        
-        [JsonProperty(PropertyName = "order_id")]
+
         public Guid ID { get; private set; }
+
+       
+        [IgnoreProperty]
         [JsonIgnore]
         public Dictionary<Guid, OrderItem> Items { get; } = new Dictionary<Guid, OrderItem>();
+        //Serialization and API
 
-        [JsonProperty(PropertyName = "items")]
-        public List<Guid> ItemsList => Items.Keys.ToList();
-
-        [JsonProperty(PropertyName = "total_cost")]
+        [IgnoreProperty]
+        [JsonIgnore]
         public decimal Total => Items.Values.Sum(i => i.Quantity * i.Item.Price);
 
         public DateTime? CreatedAt { get; private set; } = null;
@@ -29,19 +29,33 @@ namespace DataModels
         public DateTime? CompletedAt { get; private set; } = null;
 
         //Non serializable
-        [JsonIgnore]
+        [IgnoreProperty]
         public bool Exists => CreatedAt != null;
         //Non serializable
-        [JsonIgnore]
+        [IgnoreProperty]
         public bool CheckedOut => CheckedOutAt != null;
         //Non serializable
-        [JsonProperty(PropertyName = "paid")]
+        [IgnoreProperty]
         public bool Completed => CompletedAt != null;
-        [JsonIgnore]
+        [IgnoreProperty]
         public bool CanCheckout => Exists && !CheckedOut && !Completed;
-        [JsonIgnore]
+        [IgnoreProperty]
         public bool CanComplete => Exists && CheckedOut && !Completed;
 
+
+        public List<Guid> GetItems()
+        {
+            var list = new List<Guid>();
+            foreach(var item in Items)
+            {
+                int qtd = item.Value.Quantity;
+                for(int i = 0; i < qtd; i++)
+                {
+                    list.Add(item.Key);
+                }
+            }
+            return list;
+        }
         public void Create(Guid userId, Guid orderId)
         {
             this.UserId = userId;
@@ -107,6 +121,41 @@ namespace DataModels
         {
             Items.Remove(id);
         }
+
+        public override IDictionary<string, EntityProperty> WriteEntity(OperationContext operationContext)
+        {
+            // This line will write partition key and row key, but not Layout since it has the IgnoreProperty attribute
+            var x = base.WriteEntity(operationContext);
+            throw new Exception("ffs");
+            // Writing x manually as a serialized string.
+            x[nameof(this.Items)] = new EntityProperty(JsonConvert.SerializeObject(this.Items));
+            return x;
+        }
+
+        public override void ReadEntity(IDictionary<string, EntityProperty> properties, OperationContext operationContext)
+        {
+            base.ReadEntity(properties, operationContext);
+            if (properties.ContainsKey(nameof(this.Items)))
+            {
+                var itemsList = JsonConvert.DeserializeObject< List<OrderItem>>(properties[nameof(this.Items)].StringValue);
+                foreach(var item in itemsList)
+                {
+                    Items.Add(item.Item.ID, item);
+                }
+            }
+        }
+        
+        public OrderFormatted GetOrder()
+        {
+            return new OrderFormatted
+            {
+                UserId = UserId,
+                ID = ID,
+                Items = GetItems(),
+                Paid = Completed,
+                Total = Total
+            };
+        }
     }
 
 
@@ -116,5 +165,24 @@ namespace DataModels
         public Guid ID { get; set; }
         [JsonProperty("paid")]
         public bool Paid { get; set; }
+    }
+
+    public class OrderFormatted
+    {
+        [JsonProperty(PropertyName = "user_id")]
+        public Guid UserId { get; set; } //FK of use
+
+        [JsonProperty(PropertyName = "order_id")]
+        public Guid ID { get; set; }
+
+        [JsonProperty(PropertyName = "items")]
+        public List<Guid> Items { get; set; }
+
+        [JsonProperty(PropertyName ="total")]
+        public decimal Total { get; set; }
+
+        [JsonProperty(PropertyName = "Paid")]
+        public bool Paid { get; set; }
+    
     }
 }

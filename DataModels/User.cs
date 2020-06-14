@@ -3,6 +3,7 @@ using System;
 
 namespace DataModels
 {
+    [Serializable]
     public class User
     {
         [JsonProperty(PropertyName = "user_id")]

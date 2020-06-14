@@ -9,7 +9,7 @@ namespace Test.GrainsTest
 {
     public class OrderGrainTest
     {
-        private readonly decimal _price = new decimal(42.42);
+        private readonly decimal _price = 42.42M;
         private TestCluster _testCluster;
         private IOrderGrain _orderGrain;
         private Guid _guid;
@@ -104,7 +104,7 @@ namespace Test.GrainsTest
         public async Task RemoveItemGetCostTestTrue()
         {
             await _orderGrain.CreateOrder(_guid);
-            var item = new Stock {ID = _guid, Price = Decimal.One};
+            var item = new Stock {ID = _guid, Price = decimal.One};
             await _orderGrain.AddItem(item);
 
             Assert.IsInstanceOf<Task>(_orderGrain.RemoveItem(item));
@@ -114,7 +114,7 @@ namespace Test.GrainsTest
         public async Task RemoveItemGetCostTestNotEnoughInOrder()
         {
             await _orderGrain.CreateOrder(_guid);
-            var item = new Stock {ID = _guid, Price = Decimal.One};
+            var item = new Stock {ID = _guid, Price = decimal.One};
             await _orderGrain.AddItem(item);
             await _orderGrain.RemoveItem(item);
             
@@ -125,7 +125,7 @@ namespace Test.GrainsTest
         public async Task RemoveItemTestNotInOrder()
         {
             await _orderGrain.CreateOrder(_guid);
-            var item = new Stock {ID = _guid, Price = Decimal.One};
+            var item = new Stock {ID = _guid, Price = decimal.One};
             
             Assert.ThrowsAsync<ItemNotInOrderException>(() => _orderGrain.RemoveItem(item));
         }

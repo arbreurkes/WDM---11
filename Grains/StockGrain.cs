@@ -56,7 +56,7 @@ namespace Grains
 
         public Task<Stock> Create(decimal price)
         {
-            //What if the item already exists ? Are updates allowed ?
+            
             _stock.State.Price = price;
             _stock.State.ID = this.GetPrimaryKey();
             return Task.FromResult(_stock.State);

@@ -3,6 +3,7 @@ using System;
 
 namespace DataModels
 {
+    [Serializable]
     public class Stock
     {
         [JsonProperty(PropertyName = "item_id")]

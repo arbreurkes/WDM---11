@@ -50,10 +50,10 @@ namespace API.Controllers
         }
 
         [HttpPost("item/create/{price}")]
-        public async Task<Stock> AddItem(decimal price)
+        public async Task<Stock> AddItem(double price)
         {
             var item = _client.GetGrain<IStockGrain>(Guid.NewGuid());
-            return await item.Create(price); 
+            return await item.Create(new decimal(price)); 
         }
 
     }

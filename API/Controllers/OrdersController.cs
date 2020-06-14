@@ -20,12 +20,12 @@ namespace API.Controllers
         }
 
         [HttpPost("create/{user_id}")]
-        public async Task<Order> CreateOrder(Guid user_id)
+        public async Task<OrderFormatted> CreateOrder(Guid user_id)
         {
             var orderId = Guid.NewGuid();
             await _client.GetGrain<IUserGrain>(user_id).GetUser(); //if user does not exist an exception is thrown
             var order = _client.GetGrain<IOrderGrain>(orderId);
-            return await order.CreateOrder(user_id);
+            return (await order.CreateOrder(user_id)).GetOrder();
         }
     
         [HttpDelete("remove/{id}")]
@@ -37,10 +37,10 @@ namespace API.Controllers
         }
 
         [HttpGet("find/{id}")]
-        public async Task<Order> GetOrderDetails(Guid id)
+        public async Task<OrderFormatted> GetOrderDetails(Guid id)
         {
             var order = _client.GetGrain<IOrderGrain>(id);
-            return await order.GetOrder();
+            return (await order.GetOrder()).GetOrder();
         }
 
         [HttpPost("additem/{order_id}/{item_id}")]
