@@ -295,5 +295,24 @@ namespace Test.DataModelsTest
         
             Assert.True(_order.CancelCheckout());
         }
+        
+        [Test]
+        public void TestCancelCompleteFalse()
+        {
+            _order.Create(new Guid(), new Guid());
+            _order.Checkout();
+
+            Assert.False(_order.CancelComplete());
+        }
+        
+        [Test]
+        public void TestCancelCompleteTrue()
+        {
+            _order.Create(new Guid(), new Guid());
+            _order.Checkout();
+            _order.Complete();
+        
+            Assert.True(_order.CancelComplete());
+        }
     }
 }
