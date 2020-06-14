@@ -80,8 +80,9 @@ namespace Grains
                 OrderItem oi = new OrderItem() { Item = item, Quantity = 1 };
                 _order.State.Items.Add(id, oi);
             }
-             await _order.WriteStateAsync();
-
+            await _order.WriteStateAsync();
+         
+            
         }
 
         public async Task RemoveItem(Stock item)
@@ -112,7 +113,7 @@ namespace Grains
                 _order.State.RemoveItem(id);
             }
             
-            // await _order.WriteStateAsync();
+              await _order.WriteStateAsync();
 
         }
 

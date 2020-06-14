@@ -661,9 +661,9 @@ class LoadTests(TaskSet):
         LoadTest1: 0,
         LoadTest2: 0,
         LoadTest3: 0,
-        LoadTest4: 0,
-        LoadTest5: 50,
-        LoadTest6: 50,
+        LoadTest4: 100,
+        LoadTest5: 0,
+        LoadTest6: 0,
         LoadTest7: 0,
         LoadTest8: 0,
         LoadTest9: 0

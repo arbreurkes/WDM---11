@@ -67,7 +67,7 @@ namespace ShoppingCart
                     string connectionString = conf.GetConnectionString("BartsAzureTableStorage");
                     siloBuilder
                     .UseLocalhostClustering()
-                    .UseAzureStorageClustering(options => options.ConnectionString = connectionString)
+                    //.UseAzureStorageClustering(options => options.ConnectionString = connectionString)
                     .Configure<ClusterOptions>(opts =>
                     {
                         opts.ClusterId = "wdm-group11-orleans-silocluster";
@@ -83,12 +83,12 @@ namespace ShoppingCart
                     options.CollectionAge = TimeSpan.FromMinutes(5);
 
                 })
-                .AddAzureTableGrainStorage(
+                .AddAzureBlobGrainStorage(
                     name: "orderStore",
                     configureOptions: options =>
                     {
                         options.UseJson = true;
-                        options.TableName = "orderStore";
+                        //options.TableName = "orderStore";
                         options.ConnectionString = connectionString;
                     })
                 .AddAzureTableGrainStorage(

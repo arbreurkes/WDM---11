@@ -84,7 +84,7 @@ namespace Test.GrainsTest
 
             Assert.AreEqual(2 * _price, await _orderGrain.GetTotalCost());
         }
-        
+   
         [Test]
         public async Task AddItemTestItemNotExists()
         {

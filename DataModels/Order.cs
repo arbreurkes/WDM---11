@@ -7,16 +7,14 @@ using System.Linq;
 namespace DataModels
 {
     [Serializable]
-    public class Order : TableEntity
+    public class Order
     {
         public Guid UserId { get; private set; } //FK of use
-
         public Guid ID { get; private set; }
 
        
-        [IgnoreProperty]
-        [JsonIgnore]
-        public Dictionary<Guid, OrderItem> Items { get; } = new Dictionary<Guid, OrderItem>();
+        
+        public Dictionary<Guid, OrderItem> Items { get; private set; } = new Dictionary<Guid, OrderItem>();
         //Serialization and API
 
         [IgnoreProperty]
@@ -29,17 +27,17 @@ namespace DataModels
         public DateTime? CompletedAt { get; private set; } = null;
 
         //Non serializable
-        [IgnoreProperty]
+        [JsonIgnore]
         public bool Exists => CreatedAt != null;
         //Non serializable
-        [IgnoreProperty]
+        [JsonIgnore]
         public bool CheckedOut => CheckedOutAt != null;
         //Non serializable
-        [IgnoreProperty]
+        [JsonIgnore]
         public bool Completed => CompletedAt != null;
-        [IgnoreProperty]
+        [JsonIgnore]
         public bool CanCheckout => Exists && !CheckedOut && !Completed;
-        [IgnoreProperty]
+        [JsonIgnore]
         public bool CanComplete => Exists && CheckedOut && !Completed;
 
 
@@ -122,27 +120,6 @@ namespace DataModels
             Items.Remove(id);
         }
 
-        public override IDictionary<string, EntityProperty> WriteEntity(OperationContext operationContext)
-        {
-            // This line will write partition key and row key, but not Layout since it has the IgnoreProperty attribute
-            var x = base.WriteEntity(operationContext);
-            // Writing x manually as a serialized string.
-            x[nameof(this.Items)] = new EntityProperty(JsonConvert.SerializeObject(this.Items));
-            return x;
-        }
-
-        public override void ReadEntity(IDictionary<string, EntityProperty> properties, OperationContext operationContext)
-        {
-            base.ReadEntity(properties, operationContext);
-            if (properties.ContainsKey(nameof(this.Items)))
-            {
-                var itemsList = JsonConvert.DeserializeObject< List<OrderItem>>(properties[nameof(this.Items)].StringValue);
-                foreach(var item in itemsList)
-                {
-                    Items.Add(item.Item.ID, item);
-                }
-            }
-        }
         
         public OrderFormatted GetOrder()
         {
