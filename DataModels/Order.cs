@@ -126,7 +126,6 @@ namespace DataModels
         {
             // This line will write partition key and row key, but not Layout since it has the IgnoreProperty attribute
             var x = base.WriteEntity(operationContext);
-            throw new Exception("ffs");
             // Writing x manually as a serialized string.
             x[nameof(this.Items)] = new EntityProperty(JsonConvert.SerializeObject(this.Items));
             return x;
