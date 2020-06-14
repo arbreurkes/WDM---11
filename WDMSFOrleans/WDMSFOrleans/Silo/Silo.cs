@@ -6,6 +6,7 @@ using Microsoft.ServiceFabric.Services.Runtime;
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
+using Orleans.Hosting.ServiceFabric;
 using System;
 using System.Collections.Generic;
 using System.Fabric;
@@ -23,56 +24,25 @@ namespace Silo
             : base(context)
         { }
 
-        ///// <summary>
-        ///// Optional override to create listeners (e.g., TCP, HTTP) for this service replica to handle client or user requests.
-        ///// </summary>
-        ///// <returns>A collection of listeners.</returns>
-        //protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners()
-        //{
-        //    return new ServiceInstanceListener[0];
-        //}
-
         /// <summary>
-        /// This is the main entry point for your service instance.
+        /// Optional override to create listeners (e.g., TCP, HTTP) for this service replica to handle client or user requests.
         /// </summary>
-        /// <param name="cancellationToken">Canceled when Service Fabric needs to shut down this service instance.</param>
-        protected override async Task RunAsync(CancellationToken cancellationToken)
-        {
-            // TODO: Replace the following sample code with your own logic 
-            //       or remove this RunAsync override if it's not needed in your service.
-
-            try
-            {
-                var host = await StartSilo();
-                Console.WriteLine("\n\n Press Enter to terminate...\n\n");
-                Console.ReadLine();
-
-                await host.StopAsync();
-
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-
-            }
-        }
-
-        private static async Task<ISiloHost> StartSilo()
+        /// <returns>A collection of listeners.</returns>
+        protected override IEnumerable<ServiceInstanceListener> CreateServiceInstanceListeners()
         {
             var connectionString = "DefaultEndpointsProtocol=https;AccountName=wdmgroup11;AccountKey=gl81cDAOlt7o/+YoTWUc5tAg3Gn9V0j8JvHoffuR0RCyrPOHsRPSwCTmMuxYBhSrIjIbz/cvc2A28j3CUznVuQ==;EndpointSuffix=core.windows.net";
-            // define the cluster configuration
-            var builder = new SiloHostBuilder()
-                //.UseLocalhostClustering()
-                .UseAzureStorageClustering(options => options.ConnectionString = connectionString)
-                .Configure<ClusterOptions>(options =>
+
+            var listener = OrleansServiceListener.CreateStateless(
+                (fabricServiceContext, builder) =>
+                {
+                    builder.Configure<ClusterOptions>(options =>
                 {
                     options.ClusterId = "wdm-group11-orleans-silocluster";
                     options.ServiceId = "wdm-group11-orleans-api";
-                })
+                }).UseAzureStorageClustering(options => options.ConnectionString = connectionString)
                 //Silo-to-silo endpoints, used for communication between silos in the same cluster
                 //Client-to-silo endpoints (or gateway), used for communication between clients and silos in the same cluster
-                .ConfigureEndpoints(siloPort: 11111, gatewayPort: 30000)
+                
                //This step will help Orleans to load user assemblies and types.These assemblies are referred
                //to as Application Parts.All Grains, Grain Interfaces, and Serializers are discovered using Application Parts.
                .ConfigureApplicationParts(parts =>
@@ -80,7 +50,10 @@ namespace Silo
                    parts.AddApplicationPart(typeof(IOrderGrain).Assembly).WithReferences();
                    parts.AddApplicationPart(typeof(OrderGrain).Assembly).WithReferences();
                })
-               .UseDashboard(options => { })
+               //.UseDashboard(options =>
+               //{
+               //    options.Port = endpoints["OrleansDashboardEndpoint"];
+               //})
                .ConfigureLogging(logging =>
                     logging.AddConsole())
                .AddAzureTableGrainStorage(
@@ -107,10 +80,107 @@ namespace Silo
                         options.TableName = "userStore";
                         options.ConnectionString = connectionString;
                     });
+                    
 
-            var host = builder.Build();
-            await host.StartAsync();
-            return host;
+                    // Service Fabric manages port allocations, so update the configuration using those ports.
+                    // Gather configuration from Service Fabric.
+                    var activation = fabricServiceContext.CodePackageActivationContext;
+                    var endpoints = activation.GetEndpoints();
+
+                    // These endpoint names correspond to TCP endpoints specified in ServiceManifest.xml
+                    var siloEndpoint = endpoints["OrleansSiloEndpoint"];
+                    var gatewayEndpoint = endpoints["OrleansProxyEndpoint"];
+                    var hostname = fabricServiceContext.NodeContext.IPAddressOrFQDN;
+                    builder.ConfigureEndpoints(hostname, siloEndpoint.Port, gatewayEndpoint.Port);
+               
+                });
+
+            return new ServiceInstanceListener[] { listener };
+            //return new ServiceInstanceListener[0];
         }
+
+        ///// <summary>
+        ///// This is the main entry point for your service instance.
+        ///// </summary>
+        ///// <param name="cancellationToken">Canceled when Service Fabric needs to shut down this service instance.</param>
+        //protected override async Task RunAsync(CancellationToken cancellationToken)
+        //{
+        //    // TODO: Replace the following sample code with your own logic 
+        //    //       or remove this RunAsync override if it's not needed in your service.
+
+        //    try
+        //    {
+        //        var host = await StartSilo();
+        //        Console.WriteLine("\n\n Press Enter to terminate...\n\n");
+        //        Console.ReadLine();
+
+        //        await host.StopAsync();
+
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine(ex);
+
+        //    }
+        //}
+
+        //private static async Task<ISiloHost> StartSilo()
+        //{
+        //    var connectionString = "DefaultEndpointsProtocol=https;AccountName=wdmgroup11;AccountKey=gl81cDAOlt7o/+YoTWUc5tAg3Gn9V0j8JvHoffuR0RCyrPOHsRPSwCTmMuxYBhSrIjIbz/cvc2A28j3CUznVuQ==;EndpointSuffix=core.windows.net";
+        //    // define the cluster configuration
+        //    var builder = new SiloHostBuilder()
+        //        //.UseLocalhostClustering()
+        //        .UseAzureStorageClustering(options => options.ConnectionString = connectionString)
+        //        .Configure<ClusterOptions>(options =>
+        //        {
+        //            options.ClusterId = "wdm-group11-orleans-silocluster";
+        //            options.ServiceId = "wdm-group11-orleans-api";
+        //        })
+        //        //Silo-to-silo endpoints, used for communication between silos in the same cluster
+        //        //Client-to-silo endpoints (or gateway), used for communication between clients and silos in the same cluster
+        //        .ConfigureEndpoints(siloPort: 11111, gatewayPort: 30000)
+        //       //This step will help Orleans to load user assemblies and types.These assemblies are referred
+        //       //to as Application Parts.All Grains, Grain Interfaces, and Serializers are discovered using Application Parts.
+        //       .ConfigureApplicationParts(parts =>
+        //       {
+        //           parts.AddApplicationPart(typeof(IOrderGrain).Assembly).WithReferences();
+        //           parts.AddApplicationPart(typeof(OrderGrain).Assembly).WithReferences();
+        //       })
+        //       .UseDashboard(options =>
+        //       {
+        //           options.Port = 9000;
+        //       })
+        //       .ConfigureLogging(logging =>
+        //            logging.AddConsole())
+        //       .AddAzureTableGrainStorage(
+        //            name: "orderStore",
+        //            configureOptions: options =>
+        //            {
+        //                options.UseJson = true;
+        //                options.TableName = "orderStore";
+        //                options.ConnectionString = connectionString;
+        //            })
+        //       .AddAzureTableGrainStorage(
+        //            name: "stockStore",
+        //            configureOptions: options =>
+        //            {
+        //                options.UseJson = true;
+        //                options.TableName = "stockStore";
+        //                options.ConnectionString = connectionString;
+        //            })
+        //        .AddAzureTableGrainStorage(
+        //            name: "userStore",
+        //            configureOptions: options =>
+        //            {
+        //                options.UseJson = true;
+        //                options.TableName = "userStore";
+        //                options.ConnectionString = connectionString;
+        //            });
+
+        //    var host = builder.Build();
+        //    await host.StartAsync();
+        //    return host;
+        //}
     }
 }

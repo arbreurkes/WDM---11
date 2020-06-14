@@ -45,12 +45,14 @@ namespace API
                                     .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.None)
                                     .UseUrls(url)
                                     .Build();
+                    
                     }))
             };
         }
 
         internal static Uri GetSiloServiceName(ServiceContext context)
         {
+            
             return new Uri($"{context.CodePackageActivationContext.ApplicationName}/Silo");
         }
     }
